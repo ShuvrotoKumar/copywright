@@ -1,10 +1,37 @@
 import { useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useResetPasswordMutation } from "../../redux/api/authApi";
 
 function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
   const navigate = useNavigate();
+  const [resetPassword, { isLoading, error }] = useResetPasswordMutation();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+    
+    try {
+      const result = await resetPassword({ 
+        newPassword,
+        confirmPassword
+      });
+      if (result.data) {
+        navigate("/sign-in");
+      }
+    } catch (err) {
+      console.error("Failed to reset password:", err);
+      alert(err.data?.message || "Failed to reset password. Please try again.");
+    }
+  };
 
   return (
     <div className="bg-white min-h-screen flex items-center justify-center p-5">
@@ -14,7 +41,7 @@ function ResetPassword() {
             <div className="flex justify-center items-center mb-10">
               <img src="/logo.png" alt="" />
             </div>
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="w-full">
                 <label className="text-xl text-[#111826] mb-2 font-bold">
                   New Password
@@ -26,6 +53,8 @@ function ResetPassword() {
                     placeholder="**********"
                     className="w-full px-5 py-3 border-2 border-[#6A6D76] rounded-md outline-none mt-5 placeholder:text-xl"
                     required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
                   />
                   <button
                     type="button"
@@ -47,10 +76,12 @@ function ResetPassword() {
                 <div className="w-full relative">
                   <input
                     type={showPassword ? "text" : "password"}
-                    name="password"
+                    name="confirmPassword"
                     placeholder="**********"
                     className="w-full px-5 py-3 border-2 border-[#6A6D76] rounded-md outline-none mt-5 placeholder:text-xl"
                     required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <button
                     type="button"
@@ -65,13 +96,20 @@ function ResetPassword() {
                   </button>
                 </div>
               </div>
+
+              {error && (
+                <div className="text-red-500 text-sm text-center">
+                  {error.data?.message || "Failed to reset password"}
+                </div>
+              )}
+
               <div className="flex justify-center items-center">
                 <button
-                  onClick={() => navigate("/sign-in")}
-                  type="button"
-                  className="w-1/3 bg-[#111826] text-white font-bold py-3 rounded-lg shadow-lg cursor-pointer mt-5"
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-1/3 bg-[#111826] text-white font-bold py-3 rounded-lg shadow-lg cursor-pointer mt-5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Update Password
+                  {isLoading ? "Updating..." : "Update Password"}
                 </button>
               </div>
             </form>

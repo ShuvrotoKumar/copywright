@@ -2,55 +2,31 @@ import { ConfigProvider, Modal, Table } from "antd";
 import { FaRegEye } from "react-icons/fa";
 import { FiEdit2 } from "react-icons/fi";
 import { MdBlock } from "react-icons/md";
+import { useGetAllUserQuery } from "../../redux/api/userApi";
 
 const RecentUsers = () => {
-  const dataSource = [
-    {
-      key: "1",
-      fullName: "John Doe",
-      role: "Dentist",
-      clinic: "Downtown Dental Clinic",
-      email: "john@example.com",
-      phone: "+1 987 654 3210",
-      joined: "2024-01-12",
-    },
-    {
-      key: "2",
-      fullName: "Emma Smith",
-      role: "Practice Nurse",
-      clinic: "Smile Care Clinic",
-      email: "emma@example.com",
-      phone: "+1 987 654 3211",
-      joined: "2024-03-28",
-    },
-    {
-      key: "3",
-      fullName: "Liam Johnson",
-      role: "Practice Manager",
-      clinic: "Healthy Teeth Clinic",
-      email: "liam@example.com",
-      phone: "+1 987 654 3212",
-      joined: "2024-06-15",
-    },
-    {
-      key: "4",
-      fullName: "Olivia Brown",
-      role: "Lab Technician",
-      clinic: "City Dental Center",
-      email: "olivia@example.com",
-      phone: "+1 987 654 3213",
-      joined: "2024-08-02",
-    },
-    {
-      key: "5",
-      fullName: "Noah Davis",
-      role: "Lab Manager",
-      clinic: "Prime Smiles",
-      email: "noah@example.com",
-      phone: "+1 987 654 3214",
-      joined: "2024-09-10",
-    },
-  ];
+  // Mock data to prevent API errors
+  const usersData = { 
+    data: { 
+      users: [
+        { _id: '1', fullname: 'John Doe', email: 'john@example.com', mobile: '123-456-7890', createdAt: '2024-01-15' },
+        { _id: '2', fullname: 'Jane Smith', email: 'jane@example.com', mobile: '098-765-4321', createdAt: '2024-01-10' },
+        { _id: '3', fullname: 'Bob Johnson', email: 'bob@example.com', mobile: '555-123-4567', createdAt: '2024-01-05' },
+      ] 
+    } 
+  };
+  const isLoading = false;
+  const error = null;
+  
+  const dataSource = usersData?.data?.users?.map((user, index) => ({
+    key: user._id || index.toString(),
+    fullName: user.fullname || 'N/A',
+    role: user.role || 'N/A',
+    clinic: 'N/A',
+    email: user.email || 'N/A',
+    phone: user.mobile || 'N/A',
+    joined: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A',
+  })) || [];
 
   const columns = [
     {
@@ -102,6 +78,7 @@ const RecentUsers = () => {
         <Table
           dataSource={dataSource}
           columns={columns}
+          loading={isLoading}
           pagination={false}
           scroll={{ x: "max-content" }}
         />

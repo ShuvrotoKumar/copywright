@@ -12,13 +12,10 @@ export const userApi = baseApi.injectEndpoints({
       }),
       providesTags: ["user"],
     }),
-    getSingleUser: builder.query({
-      query: ({ userId }) => ({
-        url: "dashboard/users-business-statistics",
+    getTotalUser: builder.query({
+      query: () => ({
+        url: "users/total",
         method: "GET",
-        params: {
-          userId,
-        },
       }),
       providesTags: ["user"],
     }),
@@ -36,10 +33,10 @@ export const userApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["user"],
     }),
-    deleteUser: builder.mutation({
-      query: (userId) => ({
-        url: `dashboard/delete-user/${userId}`,
-        method: "DELETE",
+    getEarningsSummary: builder.query({
+      query: () => ({
+        url: `admin/earnings/summary`,
+        method: "GET",
       }),
       invalidatesTags: ["user"],
     }),
@@ -49,8 +46,8 @@ export const userApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllUserQuery,
-  useGetSingleUserQuery,
+  useGetTotalUserQuery,
   useBlockUserMutation,
   useUnBlockUserMutation,
-  useDeleteUserMutation,
+  useGetEarningsSummaryQuery,
 } = userApi;

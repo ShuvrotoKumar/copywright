@@ -2,17 +2,17 @@ import { baseApi } from "./baseApi";
 
 const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getUserProfile: builder.query({
-      query: (params) => ({
-        url: "user/user-detail",
-        method: "GET",
-        params,
+    updateAdminProfile: builder.mutation({
+      query: (data) => ({
+        url: "admin/update-profile",
+        method: "PATCH",
+        body: data,
       }),
-      providesTags: ["profile"],
+      invalidatesTags: ["profile"],
     }),
-    updateProfile: builder.mutation({
+    updateAdminAvatar: builder.mutation({
       query: (file) => ({
-        url: "user/update-profile",
+        url: "admin/update-avatar",
         method: "PATCH",
         body: file,
       }),
@@ -20,16 +20,18 @@ const profileApi = baseApi.injectEndpoints({
     }),
     changeAdminPassword: builder.mutation({
       query: (data) => ({
-        url: "dashboard/admin-change-password",
-        method: "PATCH",
+        url: "admin/change-password",
+        method: "POST",
         body: data,
       }),
     }),
-    getUserDetails: builder.query({
+    getAdminProfile: builder.query({
       query: (params) => ({
-        url: "user/user-detail",
+        url: "admin/me",
         method: "GET",
-        params,
+        params: {
+          ...params,
+        },
       }),
       providesTags: ["profile"],
     }),
@@ -37,8 +39,8 @@ const profileApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useUpdateProfileMutation,
+  useUpdateAdminAvatarMutation,
   useChangeAdminPasswordMutation,
-  useGetUserProfileQuery,
-  useGetUserDetailsQuery,
+  useUpdateAdminProfileMutation,
+  useGetAdminProfileQuery,
 } = profileApi;

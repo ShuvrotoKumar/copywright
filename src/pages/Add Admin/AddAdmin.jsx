@@ -46,7 +46,11 @@ export default function AddAdmin() {
       toast.success("Admin created successfully!");
       navigate(-1);
     } catch (err) {
-      toast.error(err?.data?.message || "Failed to create admin.");
+      if (err?.status === 409) {
+        toast.error("An admin with this email already exists. Please use a different email.");
+      } else {
+        toast.error(err?.data?.message || "Failed to create admin.");
+      }
     }
   };
 

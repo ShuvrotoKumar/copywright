@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useVerifyEmailMutation } from "../../redux/api/authApi";
 
 function VerificationCode() {
-  const [code, setCode] = useState(new Array(5).fill(""));
+  const [code, setCode] = useState(new Array(6).fill(""));
+  const [email, setEmail] = useState("");
 
   const navigate = useNavigate();
+  const [verifyEmail, { isLoading, error }] = useVerifyEmailMutation();
 
   const handleChange = (value, index) => {
     if (!isNaN(value)) {
@@ -12,14 +15,28 @@ function VerificationCode() {
       newCode[index] = value;
       setCode(newCode);
 
-      if (value && index < 5) {
+      if (value && index < 6) {
         document.getElementById(`code-${index + 1}`).focus();
       }
     }
   };
 
   const handleVerifyCode = async () => {
-    navigate(`/new-password`);
+    const verificationCode = code.join("");
+    if (verificationCode.length !== 6) {
+      alert("Please enter all 6 digits of the verification code");
+      return;
+    }
+    
+    try {
+      const result = await verifyEmail({ email, otp: verificationCode });
+      if (result.data) {
+        navigate(`/new-password`);
+      }
+    } catch (err) {
+      console.error("Failed to verify code:", err);
+      alert(err.data?.message || "Invalid verification code. Please try again.");
+    }
   };
 
   return (
@@ -31,7 +48,9 @@ function VerificationCode() {
               <img src="/logo.png" alt="" />
             </div>
 
-            <form className="space-y-5">
+             <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleVerifyCode(); }}>
+              
+
               <div className="flex justify-center gap-2">
                 {code.map((digit, index) => (
                   <input
@@ -45,19 +64,25 @@ function VerificationCode() {
                   />
                 ))}
               </div>
+
+              {error && (
+                <div className="text-red-500 text-sm text-center">
+                  {error.data?.message || "Invalid verification code"}
+                </div>
+              )}
             </form>
             <div className="flex justify-center items-center my-5">
               <button
                 onClick={handleVerifyCode}
-                type="button"
-                className="w-1/3 bg-[#111826] text-white font-bold py-3 rounded-lg shadow-lg cursor-pointer mt-5"
+                disabled={isLoading}
+                className="w-1/3 bg-[#111826] text-white font-bold py-3 rounded-lg shadow-lg cursor-pointer mt-5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Verify Code
+                {isLoading ? "Verifying..." : "Verify Code"}
               </button>
             </div>
             <p className="text-[#111826] text-center mb-10">
               You have not received the email?{" "}
-              <span className="text-[#111826]"> Resend</span>
+              <span className="text-[#111826] cursor-pointer hover:underline"> Resend</span>
             </p>
           </div>
         </div>

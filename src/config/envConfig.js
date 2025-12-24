@@ -3,7 +3,8 @@
 // export const pdfUrl = "http://10.10.20.57:8001";
 // export const imageUrl = "http://10.10.20.57:8001/uploads";
 
-export const url = "https://instagram-copyright-check-backend.onrender.com/api/v1";
+// export const url = "https://instagram-copyright-check-backend.onrender.com/api/v1";
+export const url = "https://webhook.xn--flexytche-g2a.com/api/v1";
 export const pdfUrl = "https://instagram-copyright-check-backend.onrender.com";
 export const imageUrl = "https://instagram-copyright-check-backend.onrender.com";
 
