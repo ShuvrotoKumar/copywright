@@ -53,6 +53,10 @@ function SignInPage() {
         }
       }
 
+      // Set access token as cookie for API requests
+      const isSecure = import.meta.env.PROD;
+      document.cookie = `accessToken=${token}; path=/; max-age=3600; SameSite=Lax${isSecure ? '; secure' : ''}`;
+
       navigate("/");
     } catch (error) {
       const message =

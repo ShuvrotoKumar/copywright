@@ -30,7 +30,26 @@ function VerificationCode() {
     
     try {
       const result = await verifyEmail({ email, otp: verificationCode });
-      if (result.data) {
+      console.log("API Response:", result);
+      if (result.data?.data?.resetToken) {
+        const resetToken = result.data?.data?.resetToken;
+        console.log("API Response:", resetToken);
+        // Store the reset token if provided by the API
+        if (result.data?.data?.resetToken) {
+          console.log("Storing resetToken:", result.data?.data?.resetToken);
+          localStorage.setItem("resetToken", result.data?.data?.resetToken);
+          // Set reset token as cookie for API requests
+          const isSecure = import.meta.env.PROD;
+          document.cookie = `resetToken=${result.data?.data?.resetToken}; path=/; max-age=3600; SameSite=Lax${isSecure ? '; secure' : ''}`;
+        } else if (result.data?.data?.token) {
+          console.log("Storing token:", result.data?.data?.token);
+          localStorage.setItem("resetToken", result.data?.data?.token);
+          // Set reset token as cookie for API requests
+          const isSecure = import.meta.env.PROD;
+          document.cookie = `resetToken=${result.data?.data?.token}; path=/; max-age=3600; SameSite=Lax${isSecure ? '; secure' : ''}`;
+        } else {
+          console.log("No token found in response. Available fields:", Object.keys(result.data));
+        }
         navigate(`/new-password`);
       }
     } catch (err) {

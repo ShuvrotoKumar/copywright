@@ -32,9 +32,6 @@ const authApi = baseApi.injectEndpoints({
         url: "admin/reset-password",
         method: "POST",
         body: data,
-        headers: {
-          Authorization: localStorage.getItem("resetToken"),
-        },
       }),
 
       invalidatesTags: ["admin"],
