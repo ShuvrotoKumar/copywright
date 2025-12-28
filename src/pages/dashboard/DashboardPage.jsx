@@ -6,11 +6,8 @@ import TotalView from "./TotalView";
 import { useGetTotalUserQuery, useGetEarningsSummaryQuery } from "../../redux/api/userApi";
 
 function DashboardPage() {
-  // Mock data to prevent API errors
-  const totalUserData = { data: { total: 150 } };
-  const earningsData = { data: { yearlyTotal: { netAmount: 50000 } } };
-  const isUserCountLoading = false;
-  const isEarningsLoading = false;
+  const { data: totalUserData, isLoading: isUserCountLoading } = useGetTotalUserQuery();
+  const { data: earningsData, isLoading: isEarningsLoading } = useGetEarningsSummaryQuery();
   const currentYear = dayjs().year();
   const startYear = 2020;
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -36,18 +33,15 @@ function DashboardPage() {
   return (
     <div className="flex flex-col space-y-5 p-4 md:p-6">
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
         {[
           { value: isUserCountLoading ? 'Loading...' : totalUserCount.toString(), label: 'Total User' },
-          { value: '1200', label: 'Venue Listed' },
-          { value: '1200', label: 'Venue Booked' },
+          
           { value: isEarningsLoading ? 'Loading...' : formattedEarnings, label: 'Total Revenue' }
-        ].map((stat, index, array) => (
+        ].map((stat) => (
           <div 
             key={stat.label}
-            className={`bg-[#F2F2F2] p-4 rounded-lg flex flex-col items-center justify-center min-h-[120px] ${
-              index < array.length - 1 ? 'md:border-r-2 md:border-[#111826]' : ''
-            }`}
+            className="bg-[#F2F2F2] p-4 rounded-lg flex flex-col items-center justify-center min-h-[120px]"
           >
             <p className="text-[#111826] text-2xl md:text-3xl font-bold">{stat.value}</p>
             <p className="text-[#111826] text-lg md:text-xl font-semibold text-center">{stat.label}</p>

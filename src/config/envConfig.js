@@ -5,7 +5,7 @@
 
 // export const url = "https://instagram-copyright-check-backend.onrender.com/api/v1";
 // export const url = "https://webhook.xn--flexytche-g2a.com/api/v1";
-export const url = import.meta.env.DEV ? "/api/v1" : "https://webhook.xn--flexytche-g2a.com/api/v1";
+export const url = import.meta.env.DEV ? "/api/v1" : "https://instagram-copyright-check-backend.onrender.com/api/v1";
 export const pdfUrl = "https://instagram-copyright-check-backend.onrender.com";
 export const imageUrl = "https://instagram-copyright-check-backend.onrender.com";
 

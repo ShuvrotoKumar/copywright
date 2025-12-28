@@ -5,18 +5,7 @@ import { MdBlock } from "react-icons/md";
 import { useGetAllUserQuery } from "../../redux/api/userApi";
 
 const RecentUsers = () => {
-  // Mock data to prevent API errors
-  const usersData = { 
-    data: { 
-      users: [
-        { _id: '1', fullname: 'John Doe', email: 'john@example.com', mobile: '123-456-7890', createdAt: '2024-01-15' },
-        { _id: '2', fullname: 'Jane Smith', email: 'jane@example.com', mobile: '098-765-4321', createdAt: '2024-01-10' },
-        { _id: '3', fullname: 'Bob Johnson', email: 'bob@example.com', mobile: '555-123-4567', createdAt: '2024-01-05' },
-      ] 
-    } 
-  };
-  const isLoading = false;
-  const error = null;
+  const { data: usersData, isLoading, error } = useGetAllUserQuery();
   
   const dataSource = usersData?.data?.users?.map((user, index) => ({
     key: user._id || index.toString(),

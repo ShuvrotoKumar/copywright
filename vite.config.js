@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://webhook.xn--flexytche-g2a.com', 
+        target: 'https://instagram-copyright-check-backend.onrender.com', 
         changeOrigin: true,
         secure: true,
         ws: true,
