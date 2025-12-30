@@ -20,6 +20,8 @@ import AddAdmin from "../pages/Add Admin/AddAdmin";
 import PaymentManagement from "../pages/paymentManagement/PaymentManagement";
 import Invoices from "../pages/invoices/Invoices";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
+import Faq from "../pages/Faq/Faq";
+import Blog from "../pages/Blog/Blog";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +63,10 @@ const router = createBrowserRouter([
         element: <Subscriptions />,
       },
       {
+        path: "/faq",
+        element: <Faq />,
+      },
+      {
         path: "/notifications",
         element: <Notifications />,
       },
@@ -95,6 +101,10 @@ const router = createBrowserRouter([
         element: <AboutUs />,
       },
       {
+        path: "/blog",
+        element: <Blog />,
+      },
+      {
         path: "/create-admin",
         element: <CreateAdmin />,
       },
@@ -109,7 +119,7 @@ const router = createBrowserRouter([
       {
         path: "/invoices",
         element: <Invoices />,
-      },
+      }
     ],
   },
 ]);

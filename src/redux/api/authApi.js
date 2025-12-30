@@ -36,6 +36,15 @@ const authApi = baseApi.injectEndpoints({
 
       invalidatesTags: ["admin"],
     }),
+    logout: builder.mutation({
+      query: (data) => ({
+        url: "admin/logout",
+        method: "POST",
+        body: data,
+      }),
+
+      invalidatesTags: ["admin"],
+    }),
   }),
 });
 
@@ -44,6 +53,7 @@ export const {
   useForgotPasswordMutation,
   useVerifyEmailMutation,
   useResetPasswordMutation,
-} = authApi;
+  useLogoutMutation,
+  } = authApi;
 
 export default authApi;

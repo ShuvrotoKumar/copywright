@@ -1,7 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { IoChevronForward } from "react-icons/io5";
+import { MdOutlineAssignment } from "react-icons/md";
 
 export default function Settings() {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const isActive = (path) => currentPath === path;
   return (
     <div className="w-full mx-auto">
       {/* Card */}
@@ -52,6 +56,15 @@ export default function Settings() {
               className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
             >
               <span className="text-gray-800 text-base">About Us</span>
+              <IoChevronForward className="text-gray-500" />
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/faq"
+              className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
+            >
+              <span className="text-gray-800 text-base">FAQ</span>
               <IoChevronForward className="text-gray-500" />
             </Link>
           </li>

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RxDashboard } from "react-icons/rx";
 import { LuUsers } from "react-icons/lu";
 import { TbBrandWechat, TbReport } from "react-icons/tb";
@@ -13,16 +13,32 @@ import {
 } from "react-icons/md";
 import { RiFlaskLine } from "react-icons/ri";
 import { BsReceipt } from "react-icons/bs";
+import { message } from "antd";
+import { useLogoutMutation } from "../../redux/api/authApi";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const isActive = (path) => currentPath === path;
+  const [logout, { isLoading }] = useLogoutMutation();
   
   // Close sidebar when a link is clicked on mobile
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) {
       toggleSidebar();
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      message.success('Logged out successfully');
+      navigate('/sign-in');
+    } catch (error) {
+      message.error('Failed to logout');
+      // Still navigate to sign-in page even if API call fails
+      navigate('/sign-in');
     }
   };
 
@@ -134,7 +150,20 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <TbReport className="w-5 h-5" />
             <p className="text-lg font-semibold">Subscriptions</p>
           </li>
-        </Link> 
+        </Link>
+         <Link to="/blog">
+          <li
+            className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
+              isActive("/blog")
+                ? "bg-[#111826] text-white px-3 py-3 rounded-lg"
+                : "hover:bg-gray-100 px-3 py-3 rounded-lg"
+            }`}
+          >
+            <TbReport className="w-5 h-5" />
+            <p className="text-lg font-semibold">Blog</p>
+          </li>
+        </Link>
+        
         <Link to="/settings">
           <li
             className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
@@ -151,12 +180,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       {/* Logout Button */}
       <div className="absolute mt-8 md:mt-20 mmd:mt-20 w-full px-5 text-[#111826]">
-        <Link to="/sign-in">
-          <button className="flex items-center gap-4 w-full py-3 rounded-lg bg-[#111826]  px-3 duration-200 text-white justify-center ">
-            <IoLogOutOutline className="w-5 h-5 font-bold" />
-            <span>Logout</span>
-          </button>
-        </Link>
+        <button 
+          onClick={handleLogout}
+          disabled={isLoading}
+          className={`flex items-center gap-4 w-full py-3 rounded-lg bg-red-600 px-3 duration-200 text-white justify-center ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
+          }`}
+        >
+          <IoLogOutOutline className="w-5 h-5 font-bold" />
+          <span>{isLoading ? 'Logging out...' : 'Logout'}</span>
+        </button>
       </div>
     </div>
   );

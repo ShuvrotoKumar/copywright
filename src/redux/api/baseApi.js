@@ -28,5 +28,6 @@ export const baseApi = createApi({
     "notification",
     "NDA",
     "invoices",
+    "blog",
   ],
 });
