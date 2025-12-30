@@ -26,18 +26,22 @@ const blogApi = baseApi.injectEndpoints({
       invalidatesTags: ["blog"],
     }),
     updateBlog: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `blogs/${id}`,
-        method: "PUT",
+      query: ({ _id, data }) => ({
+        url: `blogs/${_id}`,
+        method: "PATCH",
         body: data,
       }),
       invalidatesTags: ["blog"],
     }),
     deleteBlog: builder.mutation({
-      query: ({ id }) => ({
-        url: `blogs/${id}`,
-        method: "DELETE",
-      }),
+      query: ({ _id }) => {
+        console.log('Delete API called with:', { _id });
+        console.log('Delete URL will be:', `blogs/${_id}`);
+        return {
+          url: `blogs/${_id}`,
+          method: "DELETE",
+        };
+      },
       invalidatesTags: ["blog"],
     }),
   }),

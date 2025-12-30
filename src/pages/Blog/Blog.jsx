@@ -1,5 +1,5 @@
 import { ConfigProvider, Modal, Table, message } from "antd";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { IoSearch, IoChevronBack, IoDocumentTextOutline, IoTrash, IoCreateOutline } from "react-icons/io5";
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +27,14 @@ function Blog() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const blogData = blogs?.data || [];
-  
+  console.log('Blog API Response:', blogs);
+  console.log('Blog Data:', blogData);
+
+  // Monitor blogToDelete state changes
+  useEffect(() => {
+    console.log('blogToDelete state changed:', blogToDelete);
+  }, [blogToDelete]);
+
   const dataSource = useMemo(() => {
     return blogData.filter(blog => 
       blog.title && blog.publishedBy && (
@@ -174,6 +181,8 @@ function Blog() {
   };
 
   const showDeleteModal = (blog) => {
+    console.log('Blog to delete:', blog);
+    console.log('Blog ID:', blog._id);
     setBlogToDelete(blog);
     setIsViewModalOpen(false);
     setIsDeleteModalOpen(true);
@@ -181,11 +190,22 @@ function Blog() {
 
   const handleDeleteBlog = async () => {
     try {
+      console.log('Current blogToDelete state:', blogToDelete);
+      console.log('blogToDelete._id:', blogToDelete?._id);
+      
+      if (!blogToDelete || !blogToDelete._id) {
+        console.error('No blog ID available for deletion');
+        message.error('No blog selected for deletion');
+        return;
+      }
+      
+      console.log('Deleting blog with ID:', blogToDelete._id);
       await deleteBlog({ _id: blogToDelete._id }).unwrap();
       message.success('Blog deleted successfully');
       setIsDeleteModalOpen(false);
       setBlogToDelete(null);
     } catch (error) {
+      console.error('Delete error:', error);
       message.error('Failed to delete blog');
     }
   };
@@ -199,12 +219,19 @@ function Blog() {
       if (blogData.coverImage) {
         formData.append('coverImage', blogData.coverImage);
       }
+
+      // Debug FormData contents
+      console.log('Blog Data being sent:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
       
       await createBlog(formData).unwrap();
       message.success('Blog created successfully');
       setIsEditModalOpen(false);
       setSelectedBlog(null);
     } catch (error) {
+      console.error('Create blog error:', error);
       message.error('Failed to create blog');
     }
   };
@@ -342,7 +369,7 @@ function Blog() {
             <div className="prose max-w-none">
               <h4 className="text-lg font-semibold mb-3">Content Preview</h4>
               <p className="text-gray-700 leading-relaxed">
-                {selectedBlog.content}
+                {selectedBlog.content || selectedBlog.body || selectedBlog.description || 'No content available'}
               </p>
             </div>
           </div>
@@ -354,7 +381,7 @@ function Blog() {
         title={
           <div className="flex items-center gap-2">
             <IoCreateOutline className="w-6 h-6 text-[#111826]" />
-            <span>Edit Blog</span>
+            <span>{selectedBlog?._id ? 'Edit Blog' : 'Create Blog'}</span>
           </div>
         }
         open={isEditModalOpen}
@@ -378,42 +405,84 @@ function Blog() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Author
-                </label>
-                <input
-                  type="text"
-                  value={selectedBlog.author}
-                  onChange={(e) => setSelectedBlog({...selectedBlog, author: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  value={selectedBlog.category}
-                  onChange={(e) => setSelectedBlog({...selectedBlog, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Content
                 </label>
-                <textarea
-                  value={selectedBlog.content}
-                  onChange={(e) => setSelectedBlog({...selectedBlog, content: e.target.value})}
-                  rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="border border-gray-300 rounded-lg overflow-hidden">
+                  {/* Formatting Toolbar */}
+                  <div className="bg-gray-50 border-b border-gray-300 px-3 py-2 flex items-center gap-1">
+                    <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Bold">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6 4v12h4c1.657 0 3-1.343 3-3s-1.343-3-3-3H6zm2 2h2c.552 0 1 .448 1 1s-.448 1-1 1H8V6zm0 4h2c1.657 0 3 1.343 3 3s-1.343 3-3 3H8v-6z"/>
+                        </svg>
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Italic">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M7 2h6v2h-2.5l-2 8H11v2H5v-2h2.5l2-8H9V2z"/>
+                        </svg>
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Underline">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M5 3h10v2H5V3zm0 12h10v2H5v-2zm1-6h8v2c0 2.21-1.79 4-4 4s-4-1.79-4-4V9z"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Heading">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M3 4h14v2H3V4zm0 4h8v2H3V8zm0 4h14v2H3v-2z"/>
+                        </svg>
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Paragraph">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M3 3h14v2H3V3zm0 4h10v2H3V7zm0 4h14v2H3v-2zm0 4h8v2H3v-2z"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Bullet List">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M3 6h14v2H3V6zm0 4h14v2H3v-2zm0 4h14v2H3v-2zM1 6h2v2H1V6zm0 4h2v2H1v-2zm0 4h2v2H1v-2z"/>
+                        </svg>
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Numbered List">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M3 6h14v2H3V6zm0 4h14v2H3v-2zm0 4h14v2H3v-2zM1 6h2v2H1V6zm0 4h2v2H1v-2zm0 4h2v2H1v-2z"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Link">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M3.5 13.5c2.5 2.5 6.5 2.5 9 0l2-2c2.5-2.5 2.5-6.5 0-9s-6.5-2.5-9 0l-1 1m6 6l-2-2m2 2l-2 2"/>
+                        </svg>
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Image">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M4 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H4zm1 2h10v10H5V5zm2 2a1 1 0 000 2h6a1 1 0 100-2H7zm-1 4a1 1 0 00-1 1v1a1 1 0 001 1h8a1 1 0 001-1v-1a1 1 0 00-1-1H6z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  {/* Textarea */}
+                  <div className="relative">
+                    <textarea
+                      value={selectedBlog.body || ''}
+                      onChange={(e) => setSelectedBlog({...selectedBlog, body: e.target.value})}
+                      rows={10}
+                      className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder-gray-400 resize-none"
+                      placeholder="Start writing your blog content..."
+                    />
+                    <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-2 py-1 rounded shadow-sm">
+                      {selectedBlog.body?.length || 0} characters
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Cancel
               </button>
