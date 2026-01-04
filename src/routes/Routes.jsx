@@ -22,6 +22,7 @@ import Invoices from "../pages/invoices/Invoices";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
 import Faq from "../pages/Faq/Faq";
 import Blog from "../pages/Blog/Blog";
+import Coupon from "../pages/Coupon/Coupon";
 
 const router = createBrowserRouter([
   {
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
       {
         path: "/blog",
         element: <Blog />,
+      },
+      {
+        path:"/coupon",
+        element: <Coupon />,
       },
       {
         path: "/create-admin",

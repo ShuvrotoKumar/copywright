@@ -13,6 +13,7 @@ import {
 } from "react-icons/md";
 import { RiFlaskLine } from "react-icons/ri";
 import { BsReceipt } from "react-icons/bs";
+import { RiCoupon4Line } from "react-icons/ri";
 import { message } from "antd";
 import { useLogoutMutation } from "../../redux/api/authApi";
 
@@ -149,6 +150,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           >
             <TbReport className="w-5 h-5" />
             <p className="text-lg font-semibold">Subscriptions</p>
+          </li>
+        </Link>
+        <Link to="/coupon">
+          <li
+            className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
+              isActive("/coupon")
+                ? "bg-[#111826] text-white px-3 py-3 rounded-lg"
+                : "hover:bg-gray-100 px-3 py-3 rounded-lg"
+            }`}
+          >
+            <RiCoupon4Line className="w-5 h-5" />
+            <p className="text-lg font-semibold">Coupon</p>
           </li>
         </Link>
          <Link to="/blog">

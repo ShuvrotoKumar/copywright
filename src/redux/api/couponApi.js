@@ -4,35 +4,33 @@ const couponApis = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     get_all_coupon: builder.query({
       query: ({ page }) => ({
-        url: "coupon/get-all-coupon",
+        url: "subscription/coupons",
         method: "GET",
         params: { page },
       }),
       providesTags: ["coupon"],
     }),
 
-    add_coupon: builder.mutation({
+    create_coupon: builder.mutation({
       query: (data) => ({
-        url: "coupon/create-coupon",
+        url: "subscription/coupons",
         method: "POST",
         body: data,
       }),
       invalidatesTags: ["coupon"],
     }),
     update_coupon: builder.mutation({
-      query: ({ couponId, data }) => ({
-        url: `coupon/update-coupon`,
+      query: ({ _id, data }) => ({
+        url: `subscription/coupons/${_id}`,
         method: "PUT",
-        params: { couponId },
         body: data,
       }),
       invalidatesTags: ["coupon"],
     }),
     delete_coupon: builder.mutation({
-      query: ({ couponId }) => ({
-        url: `coupon/delete-coupon`,
+      query: ({ _id }) => ({
+        url: `subscription/coupons/${_id}`,
         method: "DELETE",
-        params: { couponId },
       }),
       invalidatesTags: ["coupon"],
     }),
@@ -40,7 +38,7 @@ const couponApis = baseApi.injectEndpoints({
 });
 export const {
   useGet_all_couponQuery,
-  useAdd_couponMutation,
+  useCreate_couponMutation,
   useUpdate_couponMutation,
   useDelete_couponMutation,
 } = couponApis;
