@@ -23,6 +23,7 @@ import Subscriptions from "../pages/subscriptions/Subscriptions";
 import Faq from "../pages/Faq/Faq";
 import Blog from "../pages/Blog/Blog";
 import Coupon from "../pages/Coupon/Coupon";
+import Imprint from "../pages/Imprint/Imprint";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "/privacy-policy",
         element: <PrivacyPolicy />,
+      },
+      {
+        path: "/imprint",
+        element: <Imprint />,
       },
       {
         path: "/terms-and-condition",

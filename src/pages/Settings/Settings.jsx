@@ -68,6 +68,15 @@ export default function Settings() {
               <IoChevronForward className="text-gray-500" />
             </Link>
           </li>
+          <li>
+            <Link
+              to="/imprint"
+              className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
+            >
+              <span className="text-gray-800 text-base">Imprint</span>
+              <IoChevronForward className="text-gray-500" />
+            </Link>
+          </li>
         </ul>
       </div>
     </div>

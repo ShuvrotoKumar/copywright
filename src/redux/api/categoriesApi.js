@@ -21,16 +21,16 @@ export const categoriesApi = createApi({
       invalidatesTags: ["categories"],
     }),
     update_category: builder.mutation({
-      query: ({ categoryId, data }) => ({
-        url: `category/update-category?categoryId=${categoryId}`,
-        method: "PATCH",
+      query: ({ _id, data }) => ({
+        url: `category/update-category?categoryId=${_id}`,
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: ["categories"],
     }),
     delete_category: builder.mutation({
-      query: (categoryId) => ({
-        url: `category/delete-category?categoryId=${categoryId}`,
+      query: ({ _id }) => ({
+        url: `category/delete-category?categoryId=${_id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["categories"],
