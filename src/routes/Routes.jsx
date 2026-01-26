@@ -24,6 +24,7 @@ import Faq from "../pages/Faq/Faq";
 import Blog from "../pages/Blog/Blog";
 import Coupon from "../pages/Coupon/Coupon";
 import Imprint from "../pages/Imprint/Imprint";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -45,7 +46,11 @@ const router = createBrowserRouter([
 
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "/",

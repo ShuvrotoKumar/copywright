@@ -16,10 +16,13 @@ import { BsReceipt } from "react-icons/bs";
 import { RiCoupon4Line } from "react-icons/ri";
 import { message } from "antd";
 import { useLogoutMutation } from "../../redux/api/authApi";
+import { useDispatch } from "react-redux";
+import { logout as logoutAction } from "../../redux/Slice/authSlice";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const currentPath = location.pathname;
   const isActive = (path) => currentPath === path;
   const [logout, { isLoading }] = useLogoutMutation();
@@ -35,10 +38,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     try {
       await logout().unwrap();
       message.success('Logged out successfully');
-      navigate('/sign-in');
     } catch (error) {
       message.error('Failed to logout');
-      // Still navigate to sign-in page even if API call fails
+    } finally {
+      // Always clear local auth state and navigate
+      dispatch(logoutAction());
       navigate('/sign-in');
     }
   };

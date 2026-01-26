@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLogInMutation } from "../../redux/api/authApi";
 import { setUser } from "../../redux/Slice/authSlice";
 import { storeUserInfo, storeUserToken } from "../../services/auth.service";
@@ -14,7 +14,15 @@ function SignInPage() {
   const [formError, setFormError] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
   const [logIn, { isLoading }] = useLogInMutation();
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (token) {
+      navigate("/", { replace: true });
+    }
+  }, [token, navigate]);
 
   const handleCheckboxChange = (event) => {
     if (event.target.checked) {

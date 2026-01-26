@@ -15,10 +15,12 @@ export const authSlice = createSlice({
       state.token = token;
       // console.log("token", token);
     },
-    // logout: (state) => {
-    //   state.user = null;
-    //   state.token = null;
-    // },
+    logout: (state) => {
+      state.user = null;
+      state.token = null;
+      // Clear cookies
+      document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    },
   },
 });
 
