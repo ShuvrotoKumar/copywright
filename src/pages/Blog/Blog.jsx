@@ -405,6 +405,56 @@ function Blog() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Featured Image
+                </label>
+                <div className="space-y-2">
+                  {selectedBlog.image && (
+                    <div className="relative">
+                      <img 
+                        src={selectedBlog.image} 
+                        alt="Blog featured" 
+                        className="w-full h-40 object-cover rounded-md border border-gray-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBlog({...selectedBlog, image: ''})}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setSelectedBlog({...selectedBlog, image: reader.result});
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors text-center text-sm text-gray-600"
+                    >
+                      {selectedBlog.image ? 'Change Image' : 'Choose Image'}
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500">Upload a featured image for your blog post (JPG, PNG, GIF)</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Content
                 </label>
                 <div className="border border-gray-300 rounded-lg overflow-hidden">
