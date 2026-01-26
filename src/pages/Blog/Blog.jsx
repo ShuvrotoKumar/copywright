@@ -238,11 +238,26 @@ function Blog() {
 
   const handleUpdateBlog = async (blogData) => {
     try {
-      await updateBlog({ _id: blogData._id, data: blogData }).unwrap();
+      const formData = new FormData();
+      formData.append('title', blogData.title);
+      formData.append('body', blogData.body);
+      
+      if (blogData.coverImage) {
+        formData.append('coverImage', blogData.coverImage);
+      }
+
+      // Debug FormData contents
+      console.log('Update Blog Data being sent:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      
+      await updateBlog({ _id: blogData._id, data: formData }).unwrap();
       message.success('Blog updated successfully');
       setIsEditModalOpen(false);
       setSelectedBlog(null);
     } catch (error) {
+      console.error('Update blog error:', error);
       message.error('Failed to update blog');
     }
   };
@@ -417,7 +432,7 @@ function Blog() {
                       />
                       <button
                         type="button"
-                        onClick={() => setSelectedBlog({...selectedBlog, image: ''})}
+                        onClick={() => setSelectedBlog({...selectedBlog, image: '', coverImage: undefined})}
                         className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -435,7 +450,11 @@ function Blog() {
                         if (file) {
                           const reader = new FileReader();
                           reader.onloadend = () => {
-                            setSelectedBlog({...selectedBlog, image: reader.result});
+                            setSelectedBlog({
+                              ...selectedBlog, 
+                              image: reader.result,
+                              coverImage: file // Store the actual file for API upload
+                            });
                           };
                           reader.readAsDataURL(file);
                         }
