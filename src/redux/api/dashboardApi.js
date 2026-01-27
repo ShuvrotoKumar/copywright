@@ -20,9 +20,19 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: ["dashboard"],
     }),
+    getYearlyUserGrowth: builder.query({
+      query: ({ year }) => ({
+        url: "users/growth",
+        method: "GET",
+        params: {
+          year,
+        },
+      }),
+      providesTags: ["dashboard"],
+    }),
   }),
 });
 
-export const { useGetAllDashboardQuery, useGetUserGrowthQuery } = dashboardApi;
+export const { useGetAllDashboardQuery, useGetUserGrowthQuery, useGetYearlyUserGrowthQuery } = dashboardApi;
 
 export default dashboardApi;

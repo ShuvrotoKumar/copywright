@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import RecentUsers from "./RecentUsers";
 import TotalView from "./TotalView";
 import { useGetTotalUserQuery, useGetEarningsSummaryQuery } from "../../redux/api/userApi";
+import { useGetYearlyUserGrowthQuery } from "../../redux/api/dashboardApi";
 
 function DashboardPage() {
   const { data: totalUserData, isLoading: isUserCountLoading } = useGetTotalUserQuery();
@@ -12,6 +13,12 @@ function DashboardPage() {
   const startYear = 2020;
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [isOpen, setIsOpen] = useState(false);
+
+  const {
+    data: yearlyGrowthData,
+    isLoading: isYearlyGrowthLoading,
+    isError: isYearlyGrowthError,
+  } = useGetYearlyUserGrowthQuery({ year: selectedYear });
 
   const years = Array.from(
     { length: currentYear - startYear + 1 },
@@ -29,6 +36,27 @@ function DashboardPage() {
   // Process earnings data - use correct structure from API response
   const totalEarnings = earningsData?.data?.yearlyTotal?.netAmount || 0;
   const formattedEarnings = totalEarnings ? `$${(totalEarnings / 1000).toFixed(1)}K` : '$0';
+
+  const monthShort = {
+    January: "Jan",
+    February: "Feb",
+    March: "Mar",
+    April: "Apr",
+    May: "May",
+    June: "Jun",
+    July: "Jul",
+    August: "Aug",
+    September: "Sep",
+    October: "Oct",
+    November: "Nov",
+    December: "Dec",
+  };
+
+  const growthChartData =
+    yearlyGrowthData?.data?.monthlyGrowth?.map((item) => ({
+      month: monthShort[item.month] || item.month,
+      userGrowth: item.count || 0,
+    })) || [];
 
   return (
     <div className="flex flex-col space-y-5 p-4 md:p-6">
@@ -86,7 +114,17 @@ function DashboardPage() {
           </div>
         </div>
         <div className="h-64 md:h-80">
-          <TotalView />
+          {isYearlyGrowthLoading ? (
+            <div className="h-full flex items-center justify-center text-[#111826]">
+              Loading...
+            </div>
+          ) : isYearlyGrowthError ? (
+            <div className="h-full flex items-center justify-center text-red-600">
+              Failed to load user growth.
+            </div>
+          ) : (
+            <TotalView data={growthChartData} dataKey="userGrowth" />
+          )}
         </div>
       </div>
       {/* Recent Users Section */}

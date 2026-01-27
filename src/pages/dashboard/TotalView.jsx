@@ -24,23 +24,28 @@ const demoData = [
   { month: "Dec", videoView: 110 },
 ];
 
-const maxTrainerCount = Math.max(...demoData.map((item) => item.trainer), 100);
-
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
-    const { month, videoView } = payload[0].payload;
+    const { month } = payload[0].payload;
+    const { name, value } = payload[0];
     return (
       <div className="bg-white shadow-md p-3 rounded-md border text-gray-700 text-[#111826]">
         <p className="font-medium text-[#111826]">Month: {month}</p>
-        <p className="font-medium text-[#111826]">Trainers: {videoView}</p>
+        <p className="font-medium text-[#111826]">{name}: {value}</p>
       </div>
     );
   }
   return null;
 };
 
-const TotalView = () => {
+const TotalView = ({ data = demoData, dataKey = "videoView" }) => {
   const [chartHeight, setChartHeight] = useState(220);
+
+  const safeData = Array.isArray(data) && data.length ? data : demoData;
+  const maxValue = Math.max(
+    ...safeData.map((item) => Number(item?.[dataKey] ?? 0)),
+    0
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -62,7 +67,7 @@ const TotalView = () => {
     <div>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <BarChart
-          data={demoData}
+          data={safeData}
           margin={{
             top: 0,
             right: 0,
@@ -73,14 +78,14 @@ const TotalView = () => {
           <XAxis tickLine={false} dataKey="month" className="text-[#111826]" />
           <YAxis
             tickLine={false}
-            domain={[0, maxTrainerCount + 10]}
+            domain={[0, maxValue + 10]}
             className="text-[#111826]"
           />
           <Tooltip content={<CustomTooltip />} />
           <Bar
             barSize={30}
             radius={[5, 5, 0, 0]}
-            dataKey="videoView"
+            dataKey={dataKey}
             fill="#111826"
           />
         </BarChart>
