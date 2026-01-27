@@ -5,6 +5,7 @@ import { FaRegEye, FaFilePdf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useGetAllTransactionsQuery } from "../../redux/api/invoicesApi";
 import dayjs from "dayjs";
+import html2pdf from "html2pdf.js";
 
 function Invoices() {
   const navigate = useNavigate();
@@ -120,42 +121,72 @@ function Invoices() {
     setInvoiceToDelete(null);
   };
 
-  const handleDownloadPdf = (invoice) => {
-    // Create a temporary link element
-    const link = document.createElement('a');
-    
-    // Create invoice content as text
-    const invoiceContent = `
-      INVOICE #${invoice.invoiceNo}
-      =======================
-      
-      Bill To:
-      ${invoice.customer}
-      ${invoice.email}
-      
-      Invoice Date: ${invoice.date}
-      Status: ${invoice.status}
-      
-      AMOUNT DUE: $${invoice.amount.toFixed(2)}
-      
-      Thank you for your business!
+  const handleDownloadPdf = async (invoice) => {
+    const container = document.createElement("div");
+
+    const invoiceDate = invoice?.date
+      ? dayjs(invoice.date).format("DD MMMM YYYY")
+      : "N/A";
+
+    container.innerHTML = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; color: #111827;">
+        <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 18px; font-weight: 700;">INVOICE</div>
+            <div style="margin-top: 6px; font-size: 14px;">Invoice No: <span style=\"font-weight:600;\">${invoice?.invoiceNo ?? "N/A"}</span></div>
+            <div style="margin-top: 4px; font-size: 14px;">Transaction ID: <span style=\"font-weight:600;\">${invoice?.invoiceNo ?? "N/A"}</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size: 12px; color: #6b7280;">Invoice Date</div>
+            <div style="margin-top: 4px; font-size: 14px; font-weight: 600;">${invoiceDate}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap: 16px; margin-bottom: 16px;">
+          <div style="flex: 1; background: #f9fafb; padding: 14px; border-radius: 10px;">
+            <div style="font-size: 12px; font-weight: 700; color:#374151; margin-bottom: 8px;">BILL TO</div>
+            <div style="font-size: 14px; font-weight: 600;">${invoice?.customer ?? "N/A"}</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">${invoice?.email ?? "N/A"}</div>
+          </div>
+          <div style="flex: 1; background: #f9fafb; padding: 14px; border-radius: 10px;">
+            <div style="font-size: 12px; font-weight: 700; color:#374151; margin-bottom: 8px;">PAYMENT</div>
+            <div style="display:flex; justify-content: space-between; font-size: 12px; margin-top: 6px;"><span style="color:#6b7280;">Status</span><span style="font-weight:600;">${(invoice?.status ?? "N/A").toString().toUpperCase()}</span></div>
+            <div style="display:flex; justify-content: space-between; font-size: 12px; margin-top: 6px;"><span style="color:#6b7280;">Amount</span><span style="font-weight:600;">$${Number(invoice?.amount ?? 0).toFixed(2)}</span></div>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
+          <div style="background: #f3f4f6; padding: 12px 14px; font-size: 12px; font-weight: 700; color:#374151;">SUMMARY</div>
+          <div style="padding: 14px;">
+            <div style="display:flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #f3f4f6;"><span style="color:#6b7280;">Subtotal</span><span style="font-weight:600;">$${Number(invoice?.amount ?? 0).toFixed(2)}</span></div>
+            <div style="display:flex; justify-content: space-between; font-size: 12px; padding: 8px 0;"><span style="color:#6b7280;">Total</span><span style="font-weight:700;">$${Number(invoice?.amount ?? 0).toFixed(2)}</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; font-size: 11px; color:#6b7280;">Thank you for your business!</div>
+      </div>
     `;
-    
-    // Create a Blob with the invoice content
-    const blob = new Blob([invoiceContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    
-    // Set the download attributes
-    link.href = url;
-    link.download = `invoice-${invoice.invoiceNo}.txt`;
-    
-    // Append to body, click and remove
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Clean up the URL object
-    URL.revokeObjectURL(url);
+
+    container.style.position = "fixed";
+    container.style.left = "-9999px";
+    container.style.top = "0";
+
+    document.body.appendChild(container);
+
+    try {
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: `invoice-${invoice?.invoiceNo ?? "download"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .from(container)
+        .save();
+    } finally {
+      document.body.removeChild(container);
+    }
   };
 
   return (
