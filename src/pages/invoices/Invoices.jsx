@@ -341,7 +341,7 @@ function Invoices() {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal
+      {/* <Modal
         title="Delete Invoice"
         open={isDeleteModalOpen}
         onOk={handleDeleteInvoice}
@@ -359,7 +359,7 @@ function Invoices() {
         <p className="py-4">
           Are you sure you want to delete invoice #{invoiceToDelete?.invoiceNo}? This action cannot be undone.
         </p>
-      </Modal>
+      </Modal> */}
 
     </div>
   );
