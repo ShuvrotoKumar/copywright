@@ -226,118 +226,115 @@ function Invoices() {
 
       {/* View Invoice Modal */}
       <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <IoDocumentTextOutline className="w-6 h-6 text-[#111826]" />
-            <span>Invoice Details</span>
-          </div>
-        }
+        title="Invoice Details"
         open={isViewModalOpen}
         onCancel={() => setIsViewModalOpen(false)}
         footer={null}
         width={800}
       >
         {selectedInvoice && (
-          <div className="py-4">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-lg font-semibold">#{selectedInvoice.invoiceNo}</h3>
-                <p className="text-gray-500">Issued on {selectedInvoice.date}</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">${selectedInvoice.amount.toFixed(2)}</div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    selectedInvoice.status === "completed"
-                      ? "bg-green-100 text-green-800"
-                      : selectedInvoice.status === "pending"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {selectedInvoice.status}
+          <div className="py-6">
+            <div className="bg-blue-50 rounded-lg p-6 mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">#{selectedInvoice.invoiceNo}</h3>
+              <p className="text-gray-600 mt-1">Transaction ID: {selectedInvoice.invoiceNo}</p>
+              <div className="mt-2">
+                <span className={
+                  selectedInvoice.status === 'completed' 
+                    ? 'px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800' 
+                    : selectedInvoice.status === 'pending'
+                    ? 'px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'
+                    : 'px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800'
+                }>
+                  {selectedInvoice.status?.toUpperCase()}
                 </span>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 mb-8">
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">Bill From</h4>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <p className="font-semibold">Acme Inc.</p>
-                  <p>123 Business Street</p>
-                  <p>New York, NY 10001</p>
-                  <p>Email: billing@acme.com</p>
-                  <p>Phone: (555) 123-4567</p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-700 mb-2">Bill To</h4>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <p className="font-semibold">{selectedInvoice.customer}</p>
-                  <p>456 Customer Ave</p>
-                  <p>New York, NY 10001</p>
-                  <p>Email: {selectedInvoice.email}</p>
-                  <p>Phone: (555) 987-6543</p>
-                </div>
+              <div className="text-right mt-4">
+                <p className="text-sm text-gray-500">Invoice Date</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {dayjs(selectedInvoice.date).format("DD MMMM YYYY")}
+                </p>
               </div>
             </div>
 
-            <div className="rounded-lg overflow-hidden mb-6">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">Website Design</div>
-                      <div className="text-sm text-gray-500">Custom website design and development</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">1</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">${(selectedInvoice.amount * 0.7).toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-medium">${(selectedInvoice.amount * 0.7).toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">Hosting (1 year)</div>
-                      <div className="text-sm text-gray-500">Premium web hosting</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">1</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">${(selectedInvoice.amount * 0.3).toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-medium">${(selectedInvoice.amount * 0.3).toFixed(2)}</td>
-                  </tr>
-                </tbody>
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan="3" className="px-6 py-3 text-right font-medium">Subtotal</td>
-                    <td className="px-6 py-3 text-right font-medium">${selectedInvoice.amount.toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td colSpan="3" className="px-6 py-1 text-right font-medium">Tax (0%)</td>
-                    <td className="px-6 py-1 text-right font-medium">$0.00</td>
-                  </tr>
-                  <tr>
-                    <td colSpan="3" className="px-6 py-3 text-right font-bold text-lg">Total</td>
-                    <td className="px-6 py-3 text-right font-bold text-lg">${selectedInvoice.amount.toFixed(2)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">BILL TO</h4>
+                <p className="font-medium text-gray-900 text-lg">{selectedInvoice.customer}</p>
+                <p className="text-gray-600">{selectedInvoice.email}</p>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">TRANSACTION DETAILS</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">PayPal Order ID:</span>
+                    <span className="font-mono text-sm">99F23055TC169750B</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Payment ID:</span>
+                    <span className="font-mono text-sm">Pending</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Type:</span>
+                    <span className="text-gray-900">Subscription Purchase</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
+            <div className="bg-purple-50 rounded-lg p-5 mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">PLAN DETAILS</h4>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-lg font-semibold text-gray-900">Basic (Monthly)</p>
+                  <p className="text-sm text-gray-600">Subscription Plan</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Duration</p>
+                  <p className="font-medium text-gray-900">Monthly</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border rounded-lg overflow-hidden mb-6">
+              <div className="bg-gray-100 px-6 py-3">
+                <h4 className="text-sm font-semibold text-gray-700">FINANCIAL SUMMARY</h4>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium text-gray-900">
+                    EUR {selectedInvoice.amount?.toFixed(2) || '119.00'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-gray-600">PayPal Fee:</span>
+                  <span className="font-medium text-gray-900">
+                    EUR {selectedInvoice.paypalFee?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-3 bg-green-50 px-4 rounded-lg">
+                  <span className="text-green-800 font-semibold">Net Amount:</span>
+                  <span className="text-green-800 font-bold text-lg">
+                    EUR {selectedInvoice.netAmount?.toFixed(2) || '119.00'}
+                  </span>
+                </div>
+              </div>
+            </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
               <button
+                onClick={() => handleDownloadPdf(selectedInvoice)}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                <FaFilePdf className="w-4 h-4" />
+                Download PDF
+              </button>
+              <button
                 onClick={() => setIsViewModalOpen(false)}
-                className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
               >
                 Close
               </button>
-            
             </div>
           </div>
         )}
