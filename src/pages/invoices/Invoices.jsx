@@ -89,16 +89,6 @@ function Invoices() {
           >
             <FaFilePdf className="text-red-500 w-5 h-5" />
           </button>
-          {/* <button
-            onClick={(e) => {
-              e.stopPropagation();
-              showDeleteModal(record);
-            }}
-            className="p-2 hover:bg-red-100 rounded-md"
-            title="Delete Invoice"
-          >
-            <IoTrash className="text-red-500 w-5 h-5" />
-          </button> */}
         </div>
       ),
     },
@@ -115,10 +105,19 @@ function Invoices() {
   };
 
   const handleDeleteInvoice = () => {
-    // Here you would typically call a delete API
     console.log('Deleting invoice:', invoiceToDelete?.invoiceNo);
     setIsDeleteModalOpen(false);
     setInvoiceToDelete(null);
+  };
+
+  const getStatusBadge = (status) => {
+    if (status === 'completed') {
+      return 'background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block;';
+    } else if (status === 'pending') {
+      return 'background: #fef3c7; color: #854d0e; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block;';
+    } else {
+      return 'background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block;';
+    }
   };
 
   const handleDownloadPdf = async (invoice) => {
@@ -129,41 +128,82 @@ function Invoices() {
       : "N/A";
 
     container.innerHTML = `
-      <div style="font-family: Arial, sans-serif; padding: 24px; color: #111827;">
-        <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-          <div>
-            <div style="font-size: 18px; font-weight: 700;">INVOICE</div>
-            <div style="margin-top: 6px; font-size: 14px;">Invoice No: <span style=\"font-weight:600;\">${invoice?.invoiceNo ?? "N/A"}</span></div>
-            <div style="margin-top: 4px; font-size: 14px;">Transaction ID: <span style=\"font-weight:600;\">${invoice?.invoiceNo ?? "N/A"}</span></div>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 32px; color: #111827; max-width: 800px; margin: 0 auto;">
+        
+        <!-- Header Section (Blue background) -->
+        <div style="background: #dbeafe; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+          <h3 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 8px 0;">#${invoice?.invoiceNo ?? "N/A"}</h3>
+          <p style="color: #4b5563; margin: 0 0 12px 0; font-size: 14px;">Transaction ID: ${invoice?.invoiceNo ?? "N/A"}</p>
+          <div style="margin-bottom: 16px;">
+            <span style="${getStatusBadge(invoice?.status)}">${(invoice?.status ?? "N/A").toString().toUpperCase()}</span>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size: 12px; color: #6b7280;">Invoice Date</div>
-            <div style="margin-top: 4px; font-size: 14px; font-weight: 600;">${invoiceDate}</div>
-          </div>
-        </div>
-
-        <div style="display:flex; gap: 16px; margin-bottom: 16px;">
-          <div style="flex: 1; background: #f9fafb; padding: 14px; border-radius: 10px;">
-            <div style="font-size: 12px; font-weight: 700; color:#374151; margin-bottom: 8px;">BILL TO</div>
-            <div style="font-size: 14px; font-weight: 600;">${invoice?.customer ?? "N/A"}</div>
-            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">${invoice?.email ?? "N/A"}</div>
-          </div>
-          <div style="flex: 1; background: #f9fafb; padding: 14px; border-radius: 10px;">
-            <div style="font-size: 12px; font-weight: 700; color:#374151; margin-bottom: 8px;">PAYMENT</div>
-            <div style="display:flex; justify-content: space-between; font-size: 12px; margin-top: 6px;"><span style="color:#6b7280;">Status</span><span style="font-weight:600;">${(invoice?.status ?? "N/A").toString().toUpperCase()}</span></div>
-            <div style="display:flex; justify-content: space-between; font-size: 12px; margin-top: 6px;"><span style="color:#6b7280;">Amount</span><span style="font-weight:600;">$${Number(invoice?.amount ?? 0).toFixed(2)}</span></div>
+          <div style="text-align: right;">
+            <p style="font-size: 13px; color: #6b7280; margin: 0 0 4px 0;">Invoice Date</p>
+            <p style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">${invoiceDate}</p>
           </div>
         </div>
 
-        <div style="border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
-          <div style="background: #f3f4f6; padding: 12px 14px; font-size: 12px; font-weight: 700; color:#374151;">SUMMARY</div>
-          <div style="padding: 14px;">
-            <div style="display:flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #f3f4f6;"><span style="color:#6b7280;">Subtotal</span><span style="font-weight:600;">$${Number(invoice?.amount ?? 0).toFixed(2)}</span></div>
-            <div style="display:flex; justify-content: space-between; font-size: 12px; padding: 8px 0;"><span style="color:#6b7280;">Total</span><span style="font-weight:700;">$${Number(invoice?.amount ?? 0).toFixed(2)}</span></div>
+        <!-- Bill To & Transaction Details -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div style="background: #f9fafb; border-radius: 12px; padding: 20px;">
+            <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 12px 0; letter-spacing: 0.05em;">BILL TO</h4>
+            <p style="font-weight: 500; color: #111827; font-size: 16px; margin: 0 0 6px 0;">${invoice?.customer ?? "N/A"}</p>
+            <p style="color: #4b5563; font-size: 14px; margin: 0;">${invoice?.email ?? "N/A"}</p>
+          </div>
+          
+          <div style="background: #f9fafb; border-radius: 12px; padding: 20px;">
+            <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 12px 0; letter-spacing: 0.05em;">TRANSACTION DETAILS</h4>
+            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #4b5563; font-size: 14px;">PayPal Order ID:</span>
+              <span style="font-family: 'Courier New', monospace; font-size: 12px; color: #111827;">99F23055TC169750B</span>
+            </div>
+            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #4b5563; font-size: 14px;">Payment ID:</span>
+              <span style="font-family: 'Courier New', monospace; font-size: 12px; color: #111827;">Pending</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #4b5563; font-size: 14px;">Type:</span>
+              <span style="color: #111827; font-size: 14px;">Subscription Purchase</span>
+            </div>
           </div>
         </div>
 
-        <div style="margin-top: 18px; font-size: 11px; color:#6b7280;">Thank you for your business!</div>
+        <!-- Plan Details -->
+        <div style="background: #faf5ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+          <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 12px 0; letter-spacing: 0.05em;">PLAN DETAILS</h4>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 4px 0;">Basic (Monthly)</p>
+              <p style="font-size: 13px; color: #4b5563; margin: 0;">Subscription Plan</p>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-size: 13px; color: #4b5563; margin: 0 0 4px 0;">Duration</p>
+              <p style="font-weight: 500; color: #111827; margin: 0; font-size: 14px;">Monthly</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+          <div style="background: #f3f4f6; padding: 12px 24px;">
+            <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0; letter-spacing: 0.05em;">FINANCIAL SUMMARY</h4>
+          </div>
+          <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
+              <span style="color: #4b5563; font-size: 14px;">Subtotal:</span>
+              <span style="font-weight: 500; color: #111827; font-size: 14px;">EUR ${Number(invoice?.amount ?? 119.00).toFixed(2)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
+              <span style="color: #4b5563; font-size: 14px;">PayPal Fee:</span>
+              <span style="font-weight: 500; color: #111827; font-size: 14px;">EUR ${Number(invoice?.paypalFee ?? 0.00).toFixed(2)}</span>
+            </div>
+            <div style="background: #dcfce7; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #166534; font-weight: 600; font-size: 14px;">Net Amount:</span>
+              <span style="color: #166534; font-weight: 700; font-size: 18px;">EUR ${Number(invoice?.netAmount ?? 119.00).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
 
@@ -176,10 +216,10 @@ function Invoices() {
     try {
       await html2pdf()
         .set({
-          margin: 10,
+          margin: [10, 10, 10, 10],
           filename: `invoice-${invoice?.invoiceNo ?? "download"}.pdf`,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         })
         .from(container)
@@ -370,27 +410,6 @@ function Invoices() {
           </div>
         )}
       </Modal>
-
-      {/* Delete Confirmation Modal */}
-      {/* <Modal
-        title="Delete Invoice"
-        open={isDeleteModalOpen}
-        onOk={handleDeleteInvoice}
-        onCancel={() => {
-          setIsDeleteModalOpen(false);
-          setInvoiceToDelete(null);
-        }}
-        okText="Delete"
-        cancelText="Cancel"
-        okButtonProps={{
-          className: "bg-red-500 hover:bg-red-600",
-        }}
-        centered
-      >
-        <p className="py-4">
-          Are you sure you want to delete invoice #{invoiceToDelete?.invoiceNo}? This action cannot be undone.
-        </p>
-      </Modal> */}
 
     </div>
   );
