@@ -35,7 +35,7 @@ function DashboardPage() {
   
   // Process earnings data - use correct structure from API response
   const totalEarnings = earningsData?.data?.yearlyTotal?.netAmount || 0;
-  const formattedEarnings = totalEarnings ? `$${(totalEarnings / 1000).toFixed(1)}K` : '$0';
+  const formattedEarnings = totalEarnings ? `€${(totalEarnings / 1000).toFixed(1)}K` : '€0';
 
   const monthShort = {
     January: "Jan",
