@@ -88,7 +88,7 @@ function Invoices() {
           >
             <FaFilePdf className="text-red-500 w-5 h-5" />
           </button>
-          <button
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               showDeleteModal(record);
@@ -97,7 +97,7 @@ function Invoices() {
             title="Delete Invoice"
           >
             <IoTrash className="text-red-500 w-5 h-5" />
-          </button>
+          </button> */}
         </div>
       ),
     },
