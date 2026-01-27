@@ -23,5 +23,5 @@ export const invoicesApi = baseApi.injectEndpoints({
 export const {
   useGetAllTransactionsQuery,
   useGetPdfQuery,
-  useLazyGetPdfQuery,
+  useLazyGetPdfQuery
 } = invoicesApi;
