@@ -3,13 +3,13 @@ import { useState, useMemo } from "react";
 import { IoSearch, IoChevronBack, IoDocumentTextOutline, IoTrash } from "react-icons/io5";
 import { FaRegEye, FaFilePdf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useGetAllTransactionsQuery } from "../../redux/api/invoicesApi";
+import { useGetAllTransactionsQuery, useLazyGetPdfQuery } from "../../redux/api/invoicesApi";
 import dayjs from "dayjs";
-import html2pdf from "html2pdf.js";
 
 function Invoices() {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useGetAllTransactionsQuery();
+  const [triggerGetPdf, { isFetching: isPdfDownloading }] = useLazyGetPdfQuery();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -121,111 +121,24 @@ function Invoices() {
   };
 
   const handleDownloadPdf = async (invoice) => {
-    const container = document.createElement("div");
+    if (isPdfDownloading) return;
 
-    const invoiceDate = invoice?.date
-      ? dayjs(invoice.date).format("DD MMMM YYYY")
-      : "N/A";
-
-    container.innerHTML = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 32px; color: #111827; max-width: 800px; margin: 0 auto;">
-        
-        <!-- Header Section (Blue background) -->
-        <div style="background: #dbeafe; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-          <h3 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 8px 0;">#${invoice?.invoiceNo ?? "N/A"}</h3>
-          <p style="color: #4b5563; margin: 0 0 12px 0; font-size: 14px;">Transaction ID: ${invoice?.invoiceNo ?? "N/A"}</p>
-          <div style="margin-bottom: 16px;">
-            <span style="${getStatusBadge(invoice?.status)}">${(invoice?.status ?? "N/A").toString().toUpperCase()}</span>
-          </div>
-          <div style="text-align: right;">
-            <p style="font-size: 13px; color: #6b7280; margin: 0 0 4px 0;">Invoice Date</p>
-            <p style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">${invoiceDate}</p>
-          </div>
-        </div>
-
-        <!-- Bill To & Transaction Details -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-          <div style="background: #f9fafb; border-radius: 12px; padding: 20px;">
-            <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 12px 0; letter-spacing: 0.05em;">BILL TO</h4>
-            <p style="font-weight: 500; color: #111827; font-size: 16px; margin: 0 0 6px 0;">${invoice?.customer ?? "N/A"}</p>
-            <p style="color: #4b5563; font-size: 14px; margin: 0;">${invoice?.email ?? "N/A"}</p>
-          </div>
-          
-          <div style="background: #f9fafb; border-radius: 12px; padding: 20px;">
-            <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 12px 0; letter-spacing: 0.05em;">TRANSACTION DETAILS</h4>
-            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #4b5563; font-size: 14px;">PayPal Order ID:</span>
-              <span style="font-family: 'Courier New', monospace; font-size: 12px; color: #111827;">99F23055TC169750B</span>
-            </div>
-            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #4b5563; font-size: 14px;">Payment ID:</span>
-              <span style="font-family: 'Courier New', monospace; font-size: 12px; color: #111827;">Pending</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #4b5563; font-size: 14px;">Type:</span>
-              <span style="color: #111827; font-size: 14px;">Subscription Purchase</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Plan Details -->
-        <div style="background: #faf5ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-          <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 12px 0; letter-spacing: 0.05em;">PLAN DETAILS</h4>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <p style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 4px 0;">Basic (Monthly)</p>
-              <p style="font-size: 13px; color: #4b5563; margin: 0;">Subscription Plan</p>
-            </div>
-            <div style="text-align: right;">
-              <p style="font-size: 13px; color: #4b5563; margin: 0 0 4px 0;">Duration</p>
-              <p style="font-weight: 500; color: #111827; margin: 0; font-size: 14px;">Monthly</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Financial Summary -->
-        <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
-          <div style="background: #f3f4f6; padding: 12px 24px;">
-            <h4 style="font-size: 12px; font-weight: 600; color: #374151; margin: 0; letter-spacing: 0.05em;">FINANCIAL SUMMARY</h4>
-          </div>
-          <div style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
-              <span style="color: #4b5563; font-size: 14px;">Subtotal:</span>
-              <span style="font-weight: 500; color: #111827; font-size: 14px;">EUR ${Number(invoice?.amount ?? 119.00).toFixed(2)}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
-              <span style="color: #4b5563; font-size: 14px;">PayPal Fee:</span>
-              <span style="font-weight: 500; color: #111827; font-size: 14px;">EUR ${Number(invoice?.paypalFee ?? 0.00).toFixed(2)}</span>
-            </div>
-            <div style="background: #dcfce7; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #166534; font-weight: 600; font-size: 14px;">Net Amount:</span>
-              <span style="color: #166534; font-weight: 700; font-size: 18px;">EUR ${Number(invoice?.netAmount ?? 119.00).toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    `;
-
-    container.style.position = "fixed";
-    container.style.left = "-9999px";
-    container.style.top = "0";
-
-    document.body.appendChild(container);
+    const invoiceId = invoice?.invoiceNo;
+    if (!invoiceId) return;
 
     try {
-      await html2pdf()
-        .set({
-          margin: [10, 10, 10, 10],
-          filename: `invoice-${invoice?.invoiceNo ?? "download"}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        })
-        .from(container)
-        .save();
-    } finally {
-      document.body.removeChild(container);
+      const pdfBlob = await triggerGetPdf(invoiceId).unwrap();
+
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${invoiceId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      // intentionally silent for now
     }
   };
 

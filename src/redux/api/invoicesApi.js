@@ -9,7 +9,19 @@ export const invoicesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["invoices"],
     }),
+    getPdf: builder.query({
+      query: (id) => ({
+        url: `admin/transactions/export/${id}`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+      providesTags: ["invoices"],
+    }),
   }),
 });
 
-export const { useGetAllTransactionsQuery } = invoicesApi;
+export const {
+  useGetAllTransactionsQuery,
+  useGetPdfQuery,
+  useLazyGetPdfQuery,
+} = invoicesApi;
