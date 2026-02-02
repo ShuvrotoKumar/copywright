@@ -11,7 +11,7 @@ export const adminApi = baseApi.injectEndpoints({
     }),
     editAdmin: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/admins/${id}`,
+        url: `/admin/edit-admin/${id}`,
         method: "PATCH",
         body: data,
       }),
@@ -19,7 +19,7 @@ export const adminApi = baseApi.injectEndpoints({
     }),
     deleteAdmin: builder.mutation({
       query: (id) => ({
-        url: `/admins/${id}`,
+        url: `/admin/delete-admin/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["admin"],
