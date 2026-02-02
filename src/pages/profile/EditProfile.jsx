@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useUpdateAdminProfileMutation, useGetAdminProfileQuery } from "../../redux/api/profileApi";
+import { useUpdateAdminProfileMutation, useGetAdminProfileQuery2 } from "../../redux/api/profileApi";
 import { toast } from "react-hot-toast";
 
 function EditProfile() {
@@ -10,7 +10,7 @@ function EditProfile() {
   });
 
   // Real API hooks
-  const { data: profileData, isLoading } = useGetAdminProfileQuery();
+  const { data: profileData, isLoading } = useGetAdminProfileQuery2();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateAdminProfileMutation();
 
   useEffect(() => {

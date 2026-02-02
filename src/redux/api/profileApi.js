@@ -43,4 +43,5 @@ export const {
   useChangeAdminPasswordMutation,
   useUpdateAdminProfileMutation,
   useGetAdminProfileQuery,
+  useGetAdminProfileQuery: useGetAdminProfileQuery2,
 } = profileApi;
