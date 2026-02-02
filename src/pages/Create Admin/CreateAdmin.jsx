@@ -1,8 +1,8 @@
 import { ConfigProvider, Modal, Table, message } from "antd";
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
-import { IoChevronBack, IoAddOutline, IoTrash } from "react-icons/io5";
-import { useDeleteAdminMutation, useGetAllAdminQuery } from "../../redux/api/adminApi";
+import { useMemo, useState } from "react";
+import { IoChevronBack, IoAddOutline, IoCreateOutline, IoTrash } from "react-icons/io5";
+import { useDeleteAdminMutation, useEditAdminMutation, useGetAllAdminQuery } from "../../redux/api/adminApi";
 import dayjs from "dayjs";
 import { getImageUrl } from "../../config/envConfig";
 
@@ -10,6 +10,9 @@ export default function CreateAdmin() {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useGetAllAdminQuery();
   const [deleteAdmin] = useDeleteAdminMutation();
+  const [editAdmin] = useEditAdminMutation();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editableAdmin, setEditableAdmin] = useState(null);
 
   const admins = useMemo(() => data?.data || [], [data]);
 
@@ -57,30 +60,50 @@ export default function CreateAdmin() {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <button
-          type="button"
-          onClick={() => {
-            Modal.confirm({
-              title: "Delete Admin",
-              content: `Are you sure you want to delete ${record?.name || "this admin"}?`,
-              okText: "Delete",
-              cancelText: "Cancel",
-              okButtonProps: { danger: true },
-              onOk: async () => {
-                try {
-                  await deleteAdmin(record.id).unwrap();
-                  message.success("Admin deleted successfully");
-                } catch {
-                  message.error("Failed to delete admin");
-                }
-              },
-            });
-          }}
-          className="p-2 hover:bg-red-100 rounded-md"
-          title="Delete Admin"
-        >
-          <IoTrash className="text-red-500 w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setEditableAdmin({
+                id: record.id,
+                fullname: record.name,
+                email: record.email,
+                role: record.designation,
+                avatar: record.avatar,
+              });
+              setIsEditModalOpen(true);
+            }}
+            className="p-2 hover:bg-gray-100 rounded-md"
+            title="Edit Admin"
+          >
+            <IoCreateOutline className="text-[#111826] w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              Modal.confirm({
+                title: "Delete Admin",
+                content: `Are you sure you want to delete ${record?.name || "this admin"}?`,
+                okText: "Delete",
+                cancelText: "Cancel",
+                okButtonProps: { danger: true },
+                onOk: async () => {
+                  try {
+                    await deleteAdmin(record.id).unwrap();
+                    message.success("Admin deleted successfully");
+                  } catch {
+                    message.error("Failed to delete admin");
+                  }
+                },
+              });
+            }}
+            className="p-2 hover:bg-red-100 rounded-md"
+            title="Delete Admin"
+          >
+            <IoTrash className="text-red-500 w-5 h-5" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -135,6 +158,90 @@ export default function CreateAdmin() {
           scroll={{ x: "max-content" }}
         />
       </ConfigProvider>
+
+      <Modal
+        title="Edit Admin"
+        open={isEditModalOpen}
+        onCancel={() => {
+          setIsEditModalOpen(false);
+          setEditableAdmin(null);
+        }}
+        onOk={async () => {
+          if (!editableAdmin?.id) return;
+          try {
+            await editAdmin({
+              id: editableAdmin.id,
+              fullname: editableAdmin.fullname,
+              email: editableAdmin.email,
+              role: editableAdmin.role,
+              avatar: editableAdmin.avatar,
+            }).unwrap();
+            message.success("Admin updated successfully");
+            setIsEditModalOpen(false);
+            setEditableAdmin(null);
+          } catch {
+            message.error("Failed to update admin");
+          }
+        }}
+        okText="Save"
+        cancelText="Cancel"
+        centered
+      >
+        {editableAdmin && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <img
+                src={getImageUrl(editableAdmin.avatar)}
+                alt="avatar"
+                className="w-12 h-12 rounded-full"
+              />
+              <div className="text-sm text-gray-600">ID: {editableAdmin.id}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={editableAdmin.fullname || ""}
+                onChange={(e) =>
+                  setEditableAdmin({ ...editableAdmin, fullname: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={editableAdmin.email || ""}
+                onChange={(e) =>
+                  setEditableAdmin({ ...editableAdmin, email: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Designation
+              </label>
+              <input
+                type="text"
+                value={editableAdmin.role || ""}
+                onChange={(e) =>
+                  setEditableAdmin({ ...editableAdmin, role: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
