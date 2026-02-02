@@ -1,20 +1,22 @@
-import { ConfigProvider, Table } from "antd";
+import { ConfigProvider, Modal, Table, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-import { IoChevronBack, IoAddOutline } from "react-icons/io5";
-import { useGetAllAdminQuery } from "../../redux/api/adminApi";
+import { IoChevronBack, IoAddOutline, IoTrash } from "react-icons/io5";
+import { useDeleteAdminMutation, useGetAllAdminQuery } from "../../redux/api/adminApi";
 import dayjs from "dayjs";
 import { getImageUrl } from "../../config/envConfig";
 
 export default function CreateAdmin() {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useGetAllAdminQuery();
+  const [deleteAdmin] = useDeleteAdminMutation();
 
   const admins = useMemo(() => data?.data || [], [data]);
 
   const dataSource = useMemo(() => {
     return admins.map((admin, index) => ({
       key: admin._id,
+      id: admin._id,
       no: index + 1,
       name: admin.fullname,
       email: admin.email,
@@ -50,6 +52,36 @@ export default function CreateAdmin() {
       dataIndex: "updatedAt",
       key: "updatedAt",
       render: (updatedAt) => dayjs(updatedAt).format("DD/MM/YYYY"),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <button
+          type="button"
+          onClick={() => {
+            Modal.confirm({
+              title: "Delete Admin",
+              content: `Are you sure you want to delete ${record?.name || "this admin"}?`,
+              okText: "Delete",
+              cancelText: "Cancel",
+              okButtonProps: { danger: true },
+              onOk: async () => {
+                try {
+                  await deleteAdmin(record.id).unwrap();
+                  message.success("Admin deleted successfully");
+                } catch {
+                  message.error("Failed to delete admin");
+                }
+              },
+            });
+          }}
+          className="p-2 hover:bg-red-100 rounded-md"
+          title="Delete Admin"
+        >
+          <IoTrash className="text-red-500 w-5 h-5" />
+        </button>
+      ),
     },
   ];
 
