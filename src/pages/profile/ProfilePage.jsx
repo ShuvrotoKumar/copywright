@@ -113,7 +113,7 @@ function ProfilePage() {
               </div>
             </div>
             <div className="text-center md:text-left">
-              <p className="text-lg sm:text-xl md:text-3xl font-bold">{admin?.fullname || "Shah Aman"}</p>
+              <p className="text-lg sm:text-xl md:text-3xl font-bold">{admin?.fullname || "Shishir"}</p>
               <p className="text-base sm:text-lg font-semibold">{admin?.role ? admin.role.charAt(0).toUpperCase() + admin.role.slice(1) : "Admin"}</p>
             </div>
           </div>
