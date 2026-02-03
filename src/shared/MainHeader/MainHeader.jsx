@@ -2,10 +2,18 @@
 
 import { useNavigate } from "react-router-dom";
 import { IoMenu, IoNotificationsOutline } from "react-icons/io5";
-import { useGetAllNotificationQuery } from "../../redux/api/notificationApi";
+import { useGetAdminProfileQuery2 } from "../../redux/api/profileApi";
+import { getImageUrl } from "../../config/envConfig";
 
 const MainHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
+
+  const { data: profileData, isLoading: isProfileLoading } = useGetAdminProfileQuery2();
+  const admin = profileData?.data?.admin;
+  const avatarUrl = admin?.avatar ? getImageUrl(admin.avatar) : "https://avatar.iran.liara.run/public/31";
+  const name = admin?.fullname || "Mr. Admin";
+  const role = admin?.role ? admin.role.charAt(0).toUpperCase() + admin.role.slice(1) : "Admin";
+
   // Mock data to prevent API errors
   const data = { notifications: [] };
   const refetch = () => Promise.resolve();
@@ -60,16 +68,18 @@ const MainHeader = ({ toggleSidebar }) => {
               onClick={() => navigate("/profile")}
               className="flex items-center gap-2 cursor-default"
             >
-              <img
-                src="https://avatar.iran.liara.run/public/31"
-                className="w-8 md:w-12 h-8 md:h-12 object-cover rounded-full"
-                alt="User Avatar"
-              />
+              {isProfileLoading ? (
+                <div className="w-8 md:w-12 h-8 md:h-12 bg-gray-200 rounded-full animate-pulse" />
+              ) : (
+                <img
+                  src={avatarUrl}
+                  className="w-8 md:w-12 h-8 md:h-12 object-cover rounded-full"
+                  alt={name}
+                />
+              )}
               <div>
-                <h3 className="hidden md:block text-[#111826] text-lg font-semibold">
-                  Mr. Admin
-                </h3>
-                <p className="text-[#111826] text-lg font-semibold">Admin</p>
+                <h3 className="hidden md:block text-[#111826] text-lg font-semibold">{isProfileLoading ? "..." : name}</h3>
+                <p className="text-[#111826] text-lg font-semibold">{isProfileLoading ? "" : role}</p>
               </div>
             </div>
           </div>
