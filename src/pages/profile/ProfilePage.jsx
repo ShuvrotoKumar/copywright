@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCamera } from "react-icons/fa";
 import EditProfile from "./EditProfile";
 import ChangePass from "./ChangePass";
 import { IoChevronBack } from "react-icons/io5";
-import { useUpdateAdminAvatarMutation } from "../../redux/api/profileApi";
+import { useUpdateAdminAvatarMutation, useGetAdminProfileQuery2 } from "../../redux/api/profileApi";
+import { getImageUrl } from "../../config/envConfig";
 
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState("editProfile");
   const navigate = useNavigate();
+
+  const { data: profileData, isLoading: isProfileLoading, isError: isProfileError, error: profileError } = useGetAdminProfileQuery2();
+  const admin = profileData?.data?.admin;
+
   const [profileImage, setProfileImage] = useState("https://avatar.iran.liara.run/public/44");
   const [updateAdminAvatar, { isLoading: isUploadingAvatar, isError: isAvatarError, error: avatarError }] = useUpdateAdminAvatarMutation();
+
+  useEffect(() => {
+    if (admin?.avatar) {
+      setProfileImage(getImageUrl(admin.avatar));
+    }
+  }, [admin]);
 
   const handleAvatarUpload = async (event) => {
     const file = event.target.files[0];
@@ -37,7 +48,7 @@ function ProfilePage() {
       
       // Update the profile image if the API returns a new URL
       if (result?.data?.avatar) {
-        setProfileImage(result.data.avatar);
+        setProfileImage(getImageUrl(result.data.avatar));
       } else {
         // Create a temporary preview URL
         const previewUrl = URL.createObjectURL(file);
@@ -72,11 +83,15 @@ function ProfilePage() {
           <div className="flex flex-col md:flex-row justify-center items-center bg-[#111826] mt-5 text-white w-full max-w-3xl mx-auto p-4 md:p-5 gap-4 md:gap-5 rounded-lg">
             <div className="relative">
               <div className="w-[122px] h-[122px] bg-[#111826] rounded-full border-4 border-white shadow-xl flex justify-center items-center">
-                <img
-                  src={profileImage}
-                  alt="profile"
-                  className="h-30 w-32 rounded-full"
-                />
+                {isProfileLoading ? (
+                  <div className="h-30 w-32 rounded-full bg-gray-600 animate-pulse" />
+                ) : (
+                  <img
+                    src={profileImage}
+                    alt={admin?.fullname || "profile"}
+                    className="h-30 w-32 rounded-full"
+                  />
+                )}
                 {/* Upload Icon */}
                 <div className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md cursor-pointer">
                   <label htmlFor="profilePicUpload" className="cursor-pointer">
@@ -98,12 +113,19 @@ function ProfilePage() {
               </div>
             </div>
             <div className="text-center md:text-left">
-              <p className="text-lg sm:text-xl md:text-3xl font-bold">Shah Aman</p>
-              <p className="text-base sm:text-lg font-semibold">Admin</p>
+              <p className="text-lg sm:text-xl md:text-3xl font-bold">{admin?.fullname || "Shah Aman"}</p>
+              <p className="text-base sm:text-lg font-semibold">{admin?.role ? admin.role.charAt(0).toUpperCase() + admin.role.slice(1) : "Admin"}</p>
             </div>
           </div>
 
           {/* Tab Navigation Section */}
+          {isProfileError && (
+            <div className="w-full max-w-3xl mx-auto mb-4">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">
+                {profileError?.data?.message || "Failed to fetch profile"}
+              </div>
+            </div>
+          )}
           {isAvatarError && (
             <div className="w-full max-w-3xl mx-auto mb-4">
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">
