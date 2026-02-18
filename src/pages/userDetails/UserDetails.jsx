@@ -10,7 +10,13 @@ import toast from "react-hot-toast";
 
 function UserDetails() {
   const navigate = useNavigate();
-  const { data, isLoading, isError, error } = useGetAllUserQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data, isLoading, isError, error } = useGetAllUserQuery({
+    page: currentPage,
+    limit: pageSize,
+  });
   const [blockUser, { isLoading: isBlockingUser }] = useBlockUserMutation();
   const [unBlockUser, { isLoading: isUnblockingUser }] = useUnBlockUserMutation();
   const [isModalOpen, setIsModalOpen] = useState(false); // block modal
@@ -35,15 +41,8 @@ function UserDetails() {
   };
   const [dataSource, setDataSource] = useState([]);
 
-  const users = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.data)
-      ? data.data
-      : Array.isArray(data?.data?.users)
-        ? data.data.users
-        : Array.isArray(data?.users)
-          ? data.users
-          : [];
+  const users = Array.isArray(data?.data?.users) ? data.data.users : [];
+  const pagination = data?.data?.pagination;
 
   useEffect(() => {
     setDataSource(
@@ -55,9 +54,9 @@ function UserDetails() {
 
         return {
           key,
-          fullName: u?.fullName || u?.name || computedName || "N/A",
+          fullName: u?.fullname || u?.fullName || u?.name || computedName || "N/A",
           role: u?.role || u?.userType || "User",
-          clinic: u?.clinic || u?.clinicName || u?.businessName || "",
+          clinic: u?.company || u?.clinic || u?.clinicName || u?.businessName || "",
           email: u?.email || "",
           phone: u?.mobile || u?.phoneNumber || "",
           joined: u?.joined || u?.createdAt || u?.joinDate || "",
@@ -71,7 +70,7 @@ function UserDetails() {
       title: "No",
       key: "no",
       width: 70,
-      render: (_, _r, index) => index + 1,
+      render: (_, _r, index) => (currentPage - 1) * pageSize + index + 1,
     },
     {
       title: "Full Name",
@@ -134,6 +133,10 @@ function UserDetails() {
       return matchRole && matchQuery;
     });
   }, [dataSource, roleFilter, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [roleFilter, searchQuery]);
 
   const openBlock = (row) => {
     setSelectedUser(row);
@@ -236,7 +239,20 @@ function UserDetails() {
           dataSource={filteredData}
           columns={columns}
           loading={isLoading}
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            current: pagination?.currentPage ?? currentPage,
+            pageSize: pagination?.usersPerPage ?? pageSize,
+            total: pagination?.totalUsers ?? 0,
+            showSizeChanger: true,
+            pageSizeOptions: ["10", "20", "50", "100"],
+            onChange: (page, nextPageSize) => {
+              setCurrentPage(page);
+              if (typeof nextPageSize === "number" && nextPageSize !== pageSize) {
+                setPageSize(nextPageSize);
+                setCurrentPage(1);
+              }
+            },
+          }}
           scroll={{ x: "max-content" }}
         />
         {/* Block Modal */}
