@@ -1,5 +1,5 @@
 import { ConfigProvider, Modal, Table, message } from "antd";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { IoSearch, IoChevronBack, IoDocumentTextOutline, IoTrash, IoCreateOutline } from "react-icons/io5";
 import { FaRegEye, FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -18,11 +18,14 @@ function Blog() {
   const [createBlog] = useCreateBlogMutation();
   const [deleteBlog] = useDeleteBlogMutation();
   const [updateBlog] = useUpdateBlogMutation();
+
+  const editorRef = useRef(null);
   
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
+
   const [blogToDelete, setBlogToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -34,6 +37,17 @@ function Blog() {
   useEffect(() => {
     console.log('blogToDelete state changed:', blogToDelete);
   }, [blogToDelete]);
+
+  useEffect(() => {
+    if (!isEditModalOpen) return;
+    if (!editorRef.current) return;
+    if (!selectedBlog) return;
+
+    const nextHtml = selectedBlog.body || "";
+    if (editorRef.current.innerHTML !== nextHtml) {
+      editorRef.current.innerHTML = nextHtml;
+    }
+  }, [isEditModalOpen, selectedBlog]);
 
   const dataSource = useMemo(() => {
     return blogData.filter(blog => 
@@ -186,6 +200,23 @@ function Blog() {
     setBlogToDelete(blog);
     setIsViewModalOpen(false);
     setIsDeleteModalOpen(true);
+  };
+
+  const execEditorCommand = (command, value) => {
+    const el = editorRef.current;
+    if (!el || !selectedBlog) return;
+
+    el.focus();
+    document.execCommand(command, false, value);
+
+    const nextHtml = el.innerHTML;
+    setSelectedBlog({ ...selectedBlog, body: nextHtml });
+  };
+
+  const handleEditorInput = (e) => {
+    if (!selectedBlog) return;
+    const nextHtml = e.currentTarget.innerHTML;
+    setSelectedBlog({ ...selectedBlog, body: nextHtml });
   };
 
   const handleDeleteBlog = async () => {
@@ -383,9 +414,16 @@ function Blog() {
 
             <div className="prose max-w-none">
               <h4 className="text-lg font-semibold mb-3">Content Preview</h4>
-              <p className="text-gray-700 leading-relaxed">
-                {selectedBlog.content || selectedBlog.body || selectedBlog.description || 'No content available'}
-              </p>
+              <div
+                className="text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    selectedBlog.content ||
+                    selectedBlog.body ||
+                    selectedBlog.description ||
+                    "No content available",
+                }}
+              />
             </div>
           </div>
         )}
@@ -480,68 +518,121 @@ function Blog() {
                   {/* Formatting Toolbar */}
                   <div className="bg-gray-50 border-b border-gray-300 px-3 py-2 flex items-center gap-1">
                     <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Bold">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("bold")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Bold"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M6 4v12h4c1.657 0 3-1.343 3-3s-1.343-3-3-3H6zm2 2h2c.552 0 1 .448 1 1s-.448 1-1 1H8V6zm0 4h2c1.657 0 3 1.343 3 3s-1.343 3-3 3H8v-6z"/>
                         </svg>
                       </button>
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Italic">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("italic")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Italic"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M7 2h6v2h-2.5l-2 8H11v2H5v-2h2.5l2-8H9V2z"/>
                         </svg>
                       </button>
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Underline">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("underline")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Underline"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M5 3h10v2H5V3zm0 12h10v2H5v-2zm1-6h8v2c0 2.21-1.79 4-4 4s-4-1.79-4-4V9z"/>
                         </svg>
                       </button>
                     </div>
                     <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Heading">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("formatBlock", "H2")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Heading"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M3 4h14v2H3V4zm0 4h8v2H3V8zm0 4h14v2H3v-2z"/>
                         </svg>
                       </button>
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Paragraph">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("formatBlock", "P")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Paragraph"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M3 3h14v2H3V3zm0 4h10v2H3V7zm0 4h14v2H3v-2zm0 4h8v2H3v-2z"/>
                         </svg>
                       </button>
                     </div>
                     <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Bullet List">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("insertUnorderedList")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Bullet List"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M3 6h14v2H3V6zm0 4h14v2H3v-2zm0 4h14v2H3v-2zM1 6h2v2H1V6zm0 4h2v2H1v-2zm0 4h2v2H1v-2z"/>
                         </svg>
                       </button>
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Numbered List">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => execEditorCommand("insertOrderedList")}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Numbered List"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M3 6h14v2H3V6zm0 4h14v2H3v-2zm0 4h14v2H3v-2zM1 6h2v2H1V6zm0 4h2v2H1v-2zm0 4h2v2H1v-2z"/>
                         </svg>
                       </button>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Link">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Link"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M3.5 13.5c2.5 2.5 6.5 2.5 9 0l2-2c2.5-2.5 2.5-6.5 0-9s-6.5-2.5-9 0l-1 1m6 6l-2-2m2 2l-2 2"/>
                         </svg>
                       </button>
-                      <button className="p-1.5 hover:bg-gray-200 rounded transition-colors" title="Image">
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                        title="Image"
+                      >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M4 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H4zm1 2h10v10H5V5zm2 2a1 1 0 000 2h6a1 1 0 100-2H7zm-1 4a1 1 0 00-1 1v1a1 1 0 001 1h8a1 1 0 001-1v-1a1 1 0 00-1-1H6z"/>
                         </svg>
                       </button>
                     </div>
                   </div>
-                  {/* Textarea */}
+                  {/* Editor */}
                   <div className="relative">
-                    <textarea
-                      value={selectedBlog.body || ''}
-                      onChange={(e) => setSelectedBlog({...selectedBlog, body: e.target.value})}
-                      rows={10}
-                      className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder-gray-400 resize-none"
-                      placeholder="Start writing your blog content..."
+                    <div
+                      ref={editorRef}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onInput={handleEditorInput}
+                      className="w-full px-4 py-3 border-0 focus:outline-none focus:ring-0 text-gray-700 resize-none min-h-[240px]"
                     />
+
                     <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-2 py-1 rounded shadow-sm">
                       {selectedBlog.body?.length || 0} characters
                     </div>
