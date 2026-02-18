@@ -19,6 +19,13 @@ export const userApi = baseApi.injectEndpoints({
       }),
       providesTags: ["user"],
     }),
+    getSingleUser: builder.query({
+      query: (userId) => ({
+        url: `users/${userId}`,
+        method: "GET",
+      }),
+      providesTags: ["user"],
+    }),
     blockUser: builder.mutation({
       query: (userId) => ({
         url: `users/block/${userId}`,
@@ -47,6 +54,7 @@ export const userApi = baseApi.injectEndpoints({
 export const {
   useGetAllUserQuery,
   useGetTotalUserQuery,
+  useGetSingleUserQuery,
   useBlockUserMutation,
   useUnBlockUserMutation,
   useGetEarningsSummaryQuery,

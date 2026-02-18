@@ -4,7 +4,12 @@ import { IoSearch, IoChevronBack, IoAddOutline } from "react-icons/io5";
 import { MdBlock, MdLockOpen } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { FaRegEye } from "react-icons/fa";
-import { useBlockUserMutation, useGetAllUserQuery, useUnBlockUserMutation } from "../../redux/api/userApi";
+import {
+  useBlockUserMutation,
+  useGetAllUserQuery,
+  useGetSingleUserQuery,
+  useUnBlockUserMutation,
+} from "../../redux/api/userApi";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
 
@@ -39,6 +44,15 @@ function UserDetails() {
     setIsViewModalOpen(false);
     setSelectedUser(null);
   };
+
+  const {
+    data: singleUserData,
+    isLoading: isSingleUserLoading,
+    isError: isSingleUserError,
+    error: singleUserError,
+  } = useGetSingleUserQuery(selectedUser?.key, {
+    skip: !isViewModalOpen || !selectedUser?.key,
+  });
   const [dataSource, setDataSource] = useState([]);
 
   const users = Array.isArray(data?.data?.users) ? data.data.users : [];
@@ -307,26 +321,49 @@ function UserDetails() {
         >
           {selectedUser && (
             <div className="relative">
+              {isSingleUserLoading ? (
+                <div className="py-10 text-center">Loading...</div>
+              ) : isSingleUserError ? (
+                <div className="py-3 text-center text-red-600">
+                  {singleUserError?.data?.message || singleUserError?.error || "Failed to load user."}
+                </div>
+              ) : (
+                (() => {
+                  const user = singleUserData?.data?.user;
+                  const displayName = user?.fullname || selectedUser.fullName;
+                  const joinedDate = user?.createdAt || selectedUser.joined;
+                  const email = user?.email || selectedUser.email;
+                  const mobile = user?.mobile || selectedUser.phone;
+                  const role = user?.role || selectedUser.role;
+                  const company = user?.company || selectedUser.clinic || "";
+                  const address = user?.address || "";
+                  const isPremiumMember = user?.isPremiumMember;
+                  const isBlocked = typeof user?.isBlocked === "boolean" ? user.isBlocked : selectedUser.isBlocked;
+                  const updatedAt = user?.updatedAt;
+                  const subscriptionType = user?.subscriptionType;
+
+                  return (
+                    <>
               {/* Header with green gradient */}
               <div className="bg-[#111826] p-6 -m-6 mb-6 rounded-t-lg">
                 <div className="flex items-center gap-6">
                   <div className="relative">
                     <img
                       src={`https://avatar.iran.liara.run/public/${selectedUser.key}`}
-                      alt={selectedUser.fullName}
+                      alt={displayName}
                       className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
                     />
                   </div>
                   <div className="text-white">
                     <h2 className="text-3xl font-bold mb-2">
-                      {selectedUser.fullName}
+                      {displayName}
                     </h2>
                     <div className="flex items-center gap-3 mb-1">
                       {/* <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                         {selectedUser.clinic}
                       </span> */}
                       <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-                        Joined: {selectedUser.joined ? dayjs(selectedUser.joined).format("DD/MM/YYYY") : "N/A"}
+                        Joined: {joinedDate ? dayjs(joinedDate).format("DD/MM/YYYY") : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -338,19 +375,55 @@ function UserDetails() {
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
                   <div className="text-black text-sm">Email</div>
                   <div className="text-lg font-semibold">
-                    {selectedUser.email}
+                    {email}
                   </div>
                 </div>
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
                   <div className="text-black text-sm">Phone No</div>
                   <div className="text-lg font-semibold">
-                    {selectedUser.phone}
+                    {mobile}
                   </div>
                 </div>
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
                   <div className="text-black text-sm">Joined Date</div>
                                     <div className="text-lg font-semibold">
-                    {selectedUser.joined ? dayjs(selectedUser.joined).format("DD/MM/YYYY") : "N/A"}
+                    {joinedDate ? dayjs(joinedDate).format("DD/MM/YYYY") : "N/A"}
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Role</div>
+                  <div className="text-lg font-semibold">{role || "N/A"}</div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Company</div>
+                  <div className="text-lg font-semibold">{company || "N/A"}</div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Address</div>
+                  <div className="text-lg font-semibold">{address || "N/A"}</div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Premium Member</div>
+                  <div className="text-lg font-semibold">
+                    {typeof isPremiumMember === "boolean" ? (isPremiumMember ? "Yes" : "No") : "N/A"}
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Status</div>
+                  <div className={`text-lg font-semibold ${isBlocked ? "text-red-600" : "text-green-600"}`}>
+                    {isBlocked ? "Blocked" : "Active"}
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Updated At</div>
+                  <div className="text-lg font-semibold">
+                    {updatedAt ? dayjs(updatedAt).format("DD/MM/YYYY") : "N/A"}
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-black text-sm">Subscription Type</div>
+                  <div className="text-lg font-semibold">
+                    {typeof subscriptionType === "number" ? String(subscriptionType) : "N/A"}
                   </div>
                 </div>
               </div>
@@ -364,6 +437,10 @@ function UserDetails() {
                   Close
                 </button>
               </div>
+                    </>
+                  );
+                })()
+              )}
             </div>
           )}
         </Modal>
