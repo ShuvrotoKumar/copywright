@@ -8,12 +8,20 @@ import dayjs from "dayjs";
 
 function Invoices() {
   const navigate = useNavigate();
-  const { data, isLoading, isError, error } = useGetAllTransactionsQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data, isLoading, isError, error } = useGetAllTransactionsQuery({
+    page: currentPage,
+    limit: pageSize,
+  });
   const [triggerGetPdf, { isFetching: isPdfDownloading }] = useLazyGetPdfQuery();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+
+  const pagination = data?.data?.pagination;
 
   const transactions = useMemo(() => {
     if (!data?.data?.transactions) return [];
@@ -199,7 +207,21 @@ function Invoices() {
             dataSource={dataSource}
             columns={columns}
             loading={isLoading}
-            pagination={{ pageSize: 10 }}
+            pagination={{
+              current: pagination?.page ?? currentPage,
+              pageSize: pagination?.limit ?? pageSize,
+              total: pagination?.total ?? 0,
+              showSizeChanger: true,
+              pageSizeOptions: ["10", "20", "50", "100"],
+              onChange: (page, nextPageSize) => {
+                if (typeof nextPageSize === "number" && nextPageSize !== pageSize) {
+                  setPageSize(nextPageSize);
+                  setCurrentPage(1);
+                  return;
+                }
+                setCurrentPage(page);
+              },
+            }}
             rowClassName="hover:bg-gray-50 cursor-pointer"
             onRow={(record) => ({
               onClick: () => showViewModal(record),

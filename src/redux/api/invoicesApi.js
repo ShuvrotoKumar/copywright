@@ -3,9 +3,12 @@ import { baseApi } from "./baseApi";
 export const invoicesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllTransactions: builder.query({
-      query: () => ({
+      query: (params) => ({
         url: "admin/transactions",
         method: "GET",
+        params: {
+          ...(params || {}),
+        },
       }),
       providesTags: ["invoices"],
     }),
