@@ -3,6 +3,7 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import RecentUsers from "./RecentUsers";
 import TotalView from "./TotalView";
+import EarningChart from "./EarningChart";
 import { useGetTotalUserQuery, useGetEarningsSummaryQuery } from "../../redux/api/userApi";
 import { useGetYearlyUserGrowthQuery } from "../../redux/api/dashboardApi";
 
@@ -79,7 +80,7 @@ function DashboardPage() {
 
       {/* User Growth Section */}
       <div className="w-full bg-[#F2F2F2] rounded-lg shadow-md p-4 md:p-6">
-        <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-6">
+        <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center mb-2">
           <h1 className="text-xl text-[#111826] font-semibold">User Growth</h1>
           <div className="relative w-full md:w-40">
             <button
@@ -113,7 +114,7 @@ function DashboardPage() {
             )}
           </div>
         </div>
-        <div className="h-64 md:h-80">
+        <div className="h-48 md:h-60">
           {isYearlyGrowthLoading ? (
             <div className="h-full flex items-center justify-center text-[#111826]">
               Loading...
@@ -127,10 +128,15 @@ function DashboardPage() {
           )}
         </div>
       </div>
-      {/* Recent Users Section */}
+      {/* Earning Chart Section */}
       <div className="w-full">
-        <h1 className="text-xl md:text-2xl text-[#111826] font-bold mb-4">Recent Joined Users</h1>
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <EarningChart />
+      </div>
+
+      {/* Recent Users Section */}
+      <div className="w-full bg-[#F2F2F2] rounded-lg shadow-md p-4 md:p-6 mt-5">
+        <h1 className="text-xl text-[#111826] font-semibold mb-2 text-start">Recent Joined Users</h1>
+        <div className="overflow-hidden">
           <RecentUsers />
         </div>
       </div>

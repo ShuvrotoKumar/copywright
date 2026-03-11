@@ -2,11 +2,11 @@ import { ConfigProvider, Modal, Table } from "antd";
 import { FaRegEye } from "react-icons/fa";
 import { FiEdit2 } from "react-icons/fi";
 import { MdBlock } from "react-icons/md";
-import { useGetAllUserQuery } from "../../redux/api/userApi";
+import { useGetRecentUserQuery } from "../../redux/api/userApi";
 
 const RecentUsers = () => {
-  const { data: usersData, isLoading, error } = useGetAllUserQuery();
-  
+  const { data: usersData, isLoading, error } = useGetRecentUserQuery();
+
   const dataSource = usersData?.data?.users?.map((user, index) => ({
     key: user._id || index.toString(),
     fullName: user.fullname || 'N/A',
@@ -50,16 +50,16 @@ const RecentUsers = () => {
     <>
       <ConfigProvider
         theme={{
+          token: {
+            colorBgContainer: "transparent",
+          },
           components: {
-            InputNumber: {
-              activeBorderColor: "[#111826]",
-            },
-
             Table: {
-              headerBg: "[#111826]",
-              headerColor: "[#111826]",
-              cellFontSize: 16,
-              headerSplitColor: "[#111826]",
+              headerBg: "transparent",
+              headerColor: "#111826",
+              cellFontSize: 14,
+              headerSplitColor: "transparent",
+              rowHoverBg: "#ffffff",
             },
           },
         }}

@@ -1,44 +1,54 @@
-import { ConfigProvider, Modal, Table } from "antd";
+import { ConfigProvider, Modal, Table, Form, DatePicker, Button } from "antd";
 import { useState, useMemo } from "react";
-import { IoSearch, IoChevronBack, IoDocumentTextOutline, IoTrash } from "react-icons/io5";
+import { IoSearch, IoChevronBack } from "react-icons/io5";
 import { FaRegEye, FaFilePdf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useGetAllTransactionsQuery, useLazyGetPdfQuery } from "../../redux/api/invoicesApi";
+import { useGetAllTransactionsQuery, useLazyGetPdfQuery, useLazyBulkDownloadQuery } from "../../redux/api/invoicesApi";
 import dayjs from "dayjs";
 
 function Invoices() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [searchValue, setSearchValue] = useState("");
 
   const { data, isLoading, isError, error } = useGetAllTransactionsQuery({
     page: currentPage,
     limit: pageSize,
+    ...(searchValue ? { invoiceNumber: searchValue } : {})
   });
   const [triggerGetPdf, { isFetching: isPdfDownloading }] = useLazyGetPdfQuery();
+  const [triggerBulkDownload, { isFetching: isBulkDownloading }] = useLazyBulkDownloadQuery();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBulkDownloadModalOpen, setIsBulkDownloadModalOpen] = useState(false);
+  const [form] = Form.useForm();
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
   const pagination = data?.data?.pagination;
 
-  const transactions = useMemo(() => {
-    if (!data?.data?.transactions) return [];
-    return Array.isArray(data.data.transactions) ? data.data.transactions : [];
+  const invoices = useMemo(() => {
+    if (!data?.data?.invoices) return [];
+    return Array.isArray(data.data.invoices) ? data.data.invoices : [];
   }, [data]);
 
   const dataSource = useMemo(() => {
-    return transactions.map(t => ({
-      key: t.transactionId,
-      invoiceNo: t.transactionId,
-      customer: t.customerName || 'N/A',
-      email: t.customerEmail || 'N/A',
-      amount: t.amount,
-      date: t.orderDate,
-      status: t.status,
+    return invoices.map(t => ({
+      key: t._id,
+      _id: t._id,
+      invoiceNo: t.invoice_number,
+      customer: t.buyer_name || 'N/A',
+      email: t.user_id?.email || 'N/A',
+      amount: t.gross_amount,
+      date: t.invoice_date,
+      status: 'completed',
+      paypalOrderId: t.paypal_order_id,
+      paypalPaymentId: t.paypal_payment_id,
+      productName: t.product_name,
+      netAmount: t.net_amount,
+      vatAmount: t.vat_amount,
+      grossAmount: t.gross_amount
     }));
-  }, [transactions]);
+  }, [invoices]);
 
   const columns = [
     {
@@ -107,31 +117,10 @@ function Invoices() {
     setIsViewModalOpen(true);
   };
 
-  const showDeleteModal = (invoice) => {
-    setInvoiceToDelete(invoice);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleDeleteInvoice = () => {
-    console.log('Deleting invoice:', invoiceToDelete?.invoiceNo);
-    setIsDeleteModalOpen(false);
-    setInvoiceToDelete(null);
-  };
-
-  const getStatusBadge = (status) => {
-    if (status === 'completed') {
-      return 'background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block;';
-    } else if (status === 'pending') {
-      return 'background: #fef3c7; color: #854d0e; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block;';
-    } else {
-      return 'background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block;';
-    }
-  };
-
   const handleDownloadPdf = async (invoice) => {
     if (isPdfDownloading) return;
 
-    const invoiceId = invoice?.invoiceNo;
+    const invoiceId = invoice?._id;
     if (!invoiceId) return;
 
     try {
@@ -140,7 +129,7 @@ function Invoices() {
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `invoice-${invoiceId}.pdf`;
+      link.download = `invoice-${invoice?.invoiceNo || invoiceId}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -150,9 +139,33 @@ function Invoices() {
     }
   };
 
+  const handleBulkDownload = async (values) => {
+    if (!values.dateRange || values.dateRange.length !== 2) return;
+    
+    const startDate = values.dateRange[0].format('YYYY-MM-DD');
+    const endDate = values.dateRange[1].format('YYYY-MM-DD');
+
+    try {
+      const zipBlob = await triggerBulkDownload({ startDate, endDate }).unwrap();
+      
+      const url = window.URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoices_${startDate}_to_${endDate}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setIsBulkDownloadModalOpen(false);
+      form.resetFields();
+    } catch {
+      // intentionally silent for now
+    }
+  };
+
   return (
-    <div className="p-6">
-      <div className="bg-[#111826] px-5 py-3 rounded-md mb-6 flex items-center justify-between">
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -161,37 +174,40 @@ function Invoices() {
           >
             <IoChevronBack className="w-6 h-6" />
           </button>
-          <h1 className="text-white text-2xl font-bold">Invoices</h1>
+          <h1 className="text-white text-xl sm:text-2xl font-bold">Invoices</h1>
         </div>
-       
-      </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="mb-6 flex justify-end">
-          <div className="relative w-80">
+        <div className="flex items-center gap-4">
+          <Button
+            type="primary"
+            onClick={() => setIsBulkDownloadModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 h-10 px-4 rounded-md font-medium text-white border-none"
+          >
+            Bulk Download
+          </Button>
+          <div className="relative w-64 md:w-80">
             <input
               type="text"
               placeholder="Search invoices..."
-              className="w-full pl-4 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={searchValue}
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-white text-[#0D0D0D] placeholder-gray-500 pl-10 pr-3 py-2 rounded-md focus:outline-none"
             />
-            <IoSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           </div>
         </div>
+      </div>
 
-        <ConfigProvider
-          theme={{
-            components: {
-              Table: {
-                headerBg: "#f9fafb",
-                headerColor: "#111826",
-                headerBorderRadius: 8,
-                rowHoverBg: "#f3f4f6",
-                colorText: "#1f2937",
-                colorLink: "#2563eb",
-                colorLinkHover: "#1d4ed8",
-                colorLinkActive: "#1e40af",
-              },
-             Pagination: {
+      <ConfigProvider
+        theme={{
+          components: {
+            InputNumber: {
+              activeBorderColor: "#00c0b5",
+            },
+            Pagination: {
               colorPrimaryBorder: "#111827",
               colorBorder: "#111827",
               colorPrimaryHover: "#111827",
@@ -199,10 +215,17 @@ function Invoices() {
               itemActiveBgDisabled: "#111827",
               colorPrimary: "#111827",
             },
+            Table: {
+              headerBg: "#f9fafb",
+              headerColor: "#000000",
+              cellFontSize: 16,
+              headerSplitColor: "#f9fafb",
+              colorTextHeading: "#000000",
             },
-          }}
-        >
-          {isError && <div className="text-red-500 text-center my-4">{error?.data?.message || "Failed to load transactions."}</div>}
+          },
+        }}
+      >
+          {isError && <div className="text-red-500 text-center my-4">{error?.data?.message || "Failed to load invoices."}</div>}
           <Table
             dataSource={dataSource}
             columns={columns}
@@ -228,7 +251,6 @@ function Invoices() {
             })}
           />
         </ConfigProvider>
-      </div>
 
       {/* View Invoice Modal */}
       <Modal
@@ -245,8 +267,8 @@ function Invoices() {
               <p className="text-gray-600 mt-1">Transaction ID: {selectedInvoice.invoiceNo}</p>
               <div className="mt-2">
                 <span className={
-                  selectedInvoice.status === 'completed' 
-                    ? 'px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800' 
+                  selectedInvoice.status === 'completed'
+                    ? 'px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800'
                     : selectedInvoice.status === 'pending'
                     ? 'px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'
                     : 'px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800'
@@ -268,17 +290,17 @@ function Invoices() {
                 <p className="font-medium text-gray-900 text-lg">{selectedInvoice.customer}</p>
                 <p className="text-gray-600">{selectedInvoice.email}</p>
               </div>
-              
+
               <div className="bg-gray-50 rounded-lg p-5">
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">TRANSACTION DETAILS</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">PayPal Order ID:</span>
-                    <span className="font-mono text-sm">99F23055TC169750B</span>
+                    <span className="font-mono text-sm">{selectedInvoice.paypalOrderId || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Payment ID:</span>
-                    <span className="font-mono text-sm">Pending</span>
+                    <span className="font-mono text-sm">{selectedInvoice.paypalPaymentId || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Type:</span>
@@ -289,15 +311,10 @@ function Invoices() {
             </div>
 
             <div className="bg-purple-50 rounded-lg p-5 mb-6">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">PLAN DETAILS</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">PRODUCT DETAILS</h4>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-lg font-semibold text-gray-900">Basic (Monthly)</p>
-                  <p className="text-sm text-gray-600">Subscription Plan</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">Duration</p>
-                  <p className="font-medium text-gray-900">Monthly</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedInvoice.productName}</p>
                 </div>
               </div>
             </div>
@@ -308,21 +325,21 @@ function Invoices() {
               </div>
               <div className="p-6 space-y-3">
                 <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="text-gray-600">Net Amount:</span>
                   <span className="font-medium text-gray-900">
-                    EUR {selectedInvoice.amount?.toFixed(2) || '119.00'}
+                    EUR {selectedInvoice.netAmount?.toFixed(2) || '0.00'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-gray-600">PayPal Fee:</span>
+                  <span className="text-gray-600">VAT Amount:</span>
                   <span className="font-medium text-gray-900">
-                    EUR {selectedInvoice.paypalFee?.toFixed(2) || '0.00'}
+                    EUR {selectedInvoice.vatAmount?.toFixed(2) || '0.00'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-3 bg-green-50 px-4 rounded-lg">
-                  <span className="text-green-800 font-semibold">Net Amount:</span>
+                  <span className="text-green-800 font-semibold">Gross Amount:</span>
                   <span className="text-green-800 font-bold text-lg">
-                    EUR {selectedInvoice.netAmount?.toFixed(2) || '119.00'}
+                    EUR {selectedInvoice.grossAmount?.toFixed(2) || '0.00'}
                   </span>
                 </div>
               </div>
@@ -344,6 +361,44 @@ function Invoices() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Bulk Download Modal */}
+      <Modal
+        title="Bulk Download Invoices"
+        open={isBulkDownloadModalOpen}
+        onCancel={() => setIsBulkDownloadModalOpen(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleBulkDownload}
+        >
+          <Form.Item
+            name="dateRange"
+            label="Select Date Range"
+            rules={[{ required: true, message: 'Please select a date range' }]}
+          >
+            <DatePicker.RangePicker className="w-full" />
+          </Form.Item>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setIsBulkDownloadModalOpen(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isBulkDownloading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {isBulkDownloading ? 'Downloading...' : 'Download ZIP'}
+            </button>
+          </div>
+        </Form>
       </Modal>
 
     </div>

@@ -1,15 +1,17 @@
 import { ConfigProvider, Modal, Table, Select } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { IoSearch, IoChevronBack, IoAddOutline } from "react-icons/io5";
-import { MdBlock, MdLockOpen } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { FaRegEye } from "react-icons/fa";
+import { MdBlock, MdLockOpen } from "react-icons/md";
 import {
   useBlockUserMutation,
+  useDeleteUserMutation,
   useGetAllUserQuery,
+  useGetBlockedUsersQuery,
   useGetSingleUserQuery,
   useUnBlockUserMutation,
 } from "../../redux/api/userApi";
+import { IoSearch, IoChevronBack, IoAddOutline, IoTrash } from "react-icons/io5";
 import dayjs from "dayjs";
 import toast from "react-hot-toast";
 
@@ -32,17 +34,35 @@ function UserDetails() {
   const [blockError, setBlockError] = useState("");
   const [roleFilter, setRoleFilter] = useState();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isBlockedUsersModalOpen, setIsBlockedUsersModalOpen] = useState(false);
+  const [reopenBlockedList, setReopenBlockedList] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [blockedUsersPage, setBlockedUsersPage] = useState(1);
+  const { data: blockedUsersData, isLoading: isBlockedUsersLoading } = useGetBlockedUsersQuery({
+    page: blockedUsersPage,
+    limit: 10,
+  });
+  const [deleteUser, { isLoading: isDeletingUser }] = useDeleteUserMutation();
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
   const showViewModal = (user) => {
     setSelectedUser(user);
+    if (isBlockedUsersModalOpen) {
+      setIsBlockedUsersModalOpen(false);
+      setReopenBlockedList(true);
+    }
     setIsViewModalOpen(true);
   };
   const handleViewCancel = () => {
     setIsViewModalOpen(false);
     setSelectedUser(null);
+    if (reopenBlockedList) {
+      setIsBlockedUsersModalOpen(true);
+      setReopenBlockedList(false);
+    }
   };
 
   const {
@@ -75,6 +95,15 @@ function UserDetails() {
           phone: u?.mobile || u?.phoneNumber || "",
           joined: u?.joined || u?.createdAt || u?.joinDate || "",
           isBlocked: u?.isBlocked || false,
+          street: u?.street || "",
+          houseNumber: u?.houseNumber || "",
+          zipCode: u?.zipCode || "",
+          city: u?.city || "",
+          country: u?.country || "",
+          hasEverSubscribed: u?.hasEverSubscribed || false,
+          hasEverUsedCoupon: u?.hasEverUsedCoupon || false,
+          subscriptionType: u?.subscriptionType,
+          isPremiumMember: u?.isPremiumMember || false,
         };
       })
     );
@@ -90,13 +119,12 @@ function UserDetails() {
       title: "Full Name",
       dataIndex: "fullName",
       key: "fullName",
-      render: (value, record) => (
-       
+      render: (value) => (
+        <div className="flex items-center gap-2">
           <p className="leading-none">{value}</p>
-     
+        </div>
       ),
     },
-    { title: "Role", dataIndex: "role", key: "role" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Phone No", dataIndex: "phone", key: "phone" },
     { 
@@ -184,6 +212,29 @@ function UserDetails() {
     }
   };
 
+  const openDelete = (user) => {
+    setSelectedUser(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    const userId = selectedUser?.key || selectedUser?._id;
+    if (!userId) {
+      toast.error("User ID not found.");
+      return;
+    }
+
+    try {
+      await deleteUser(userId).unwrap();
+      toast.success("User deleted successfully!");
+      setIsDeleteModalOpen(false);
+      setSelectedUser(null);
+    } catch (e) {
+      const message = e?.data?.message || e?.error || "Failed to delete user.";
+      toast.error(message);
+    }
+  };
+
   return (
     <div>
       <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap md:flex-nowrap items-start md:items-center gap-2 md:gap-3">
@@ -217,6 +268,12 @@ function UserDetails() {
             />
             <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#111827]" />
           </div>
+          <button
+            onClick={() => setIsBlockedUsersModalOpen(true)}
+            className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-red-700 transition"
+          >
+            Blocked User
+          </button>
         </div>
       </div>
 
@@ -336,15 +393,22 @@ function UserDetails() {
                   const mobile = user?.mobile || selectedUser.phone;
                   const role = user?.role || selectedUser.role;
                   const company = user?.company || selectedUser.clinic || "";
-                  const address = user?.address || "";
-                  const isPremiumMember = user?.isPremiumMember;
+                  const street = user?.street || selectedUser.street || "";
+                  const houseNumber = user?.houseNumber || selectedUser.houseNumber || "";
+                  const city = user?.city || selectedUser.city || "";
+                  const country = user?.country || selectedUser.country || "";
+                  
+                  const isPremiumMember = typeof user?.isPremiumMember === 'boolean' ? user.isPremiumMember : selectedUser.isPremiumMember;
+                  const hasEverSubscribed = typeof user?.hasEverSubscribed === 'boolean' ? user.hasEverSubscribed : selectedUser.hasEverSubscribed;
+                  const hasEverUsedCoupon = typeof user?.hasEverUsedCoupon === 'boolean' ? user.hasEverUsedCoupon : selectedUser.hasEverUsedCoupon;
+                  
                   const isBlocked = typeof user?.isBlocked === "boolean" ? user.isBlocked : selectedUser.isBlocked;
                   const updatedAt = user?.updatedAt;
-                  const subscriptionType = user?.subscriptionType;
+                  const subscriptionType = user?.subscriptionType !== undefined ? user.subscriptionType : selectedUser.subscriptionType;
 
                   return (
                     <>
-              {/* Header with green gradient */}
+              {/* Header with blue-black background */}
               <div className="bg-[#111826] p-6 -m-6 mb-6 rounded-t-lg">
                 <div className="flex items-center gap-6">
                   <div className="relative">
@@ -359,71 +423,95 @@ function UserDetails() {
                       {displayName}
                     </h2>
                     <div className="flex items-center gap-3 mb-1">
-                      {/* <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-                        {selectedUser.clinic}
-                      </span> */}
                       <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                         Joined: {joinedDate ? dayjs(joinedDate).format("DD/MM/YYYY") : "N/A"}
                       </span>
+                      {isPremiumMember && (
+                        <span className="bg-yellow-500/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-white shadow-sm">
+                          PREMIUM
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Email</div>
-                  <div className="text-lg font-semibold">
-                    {email}
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Email</div>
+                  <div className="text-base font-semibold text-[#111826]">
+                    {email || "N/A"}
                   </div>
                 </div>
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Phone No</div>
-                  <div className="text-lg font-semibold">
-                    {mobile}
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Phone No</div>
+                  <div className="text-base font-semibold text-[#111826]">
+                    {mobile || "N/A"}
                   </div>
                 </div>
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Joined Date</div>
-                                    <div className="text-lg font-semibold">
-                    {joinedDate ? dayjs(joinedDate).format("DD/MM/YYYY") : "N/A"}
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Role</div>
+                  <div className="text-base font-semibold text-[#111826]">{role || "User"}</div>
+                </div>
+
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Company</div>
+                  <div className="text-base font-semibold text-[#111826]">{company || "N/A"}</div>
+                </div>
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Subscription Type</div>
+                  <div className="text-base font-semibold text-[#111826]">
+                    {subscriptionType !== undefined ? `Type ${subscriptionType}` : "None"}
                   </div>
                 </div>
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Role</div>
-                  <div className="text-lg font-semibold">{role || "N/A"}</div>
-                </div>
-                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Company</div>
-                  <div className="text-lg font-semibold">{company || "N/A"}</div>
-                </div>
-                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Address</div>
-                  <div className="text-lg font-semibold">{address || "N/A"}</div>
-                </div>
-                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Premium Member</div>
-                  <div className="text-lg font-semibold">
-                    {typeof isPremiumMember === "boolean" ? (isPremiumMember ? "Yes" : "No") : "N/A"}
-                  </div>
-                </div>
-                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Status</div>
-                  <div className={`text-lg font-semibold ${isBlocked ? "text-red-600" : "text-green-600"}`}>
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Status</div>
+                  <div className={`text-base font-semibold ${isBlocked ? "text-red-600" : "text-green-600"}`}>
                     {isBlocked ? "Blocked" : "Active"}
                   </div>
                 </div>
-                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Updated At</div>
-                  <div className="text-lg font-semibold">
-                    {updatedAt ? dayjs(updatedAt).format("DD/MM/YYYY") : "N/A"}
+
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm md:col-span-3">
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-2">Address Information</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-1">
+                    <div>
+                      <div className="text-gray-400 text-[10px] uppercase font-bold">Street</div>
+                      <div className="text-sm font-medium">{street || "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-[10px] uppercase font-bold">House No</div>
+                      <div className="text-sm font-medium">{houseNumber || "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-[10px] uppercase font-bold">City</div>
+                      <div className="text-sm font-medium">{city || "N/A"}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-[10px] uppercase font-bold">Country</div>
+                      <div className="text-sm font-medium">{country || "N/A"}</div>
+                    </div>
                   </div>
                 </div>
+
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1 text-start w-full">Usage Coupon</div>
+                  <div className={`text-sm font-bold mt-1 px-3 py-1 rounded-full ${hasEverUsedCoupon ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    {hasEverUsedCoupon ? "USED COUPON" : "NO COUPON"}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex flex-col justify-center items-center text-center">
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1 text-start w-full">Subscription History</div>
+                  <div className={`text-sm font-bold mt-1 px-3 py-1 rounded-full ${hasEverSubscribed ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-500"}`}>
+                    {hasEverSubscribed ? "PREVIOUSLY SUBSCRIBED" : "NEVER SUBSCRIBED"}
+                  </div>
+                </div>
+
                 <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
-                  <div className="text-black text-sm">Subscription Type</div>
-                  <div className="text-lg font-semibold">
-                    {typeof subscriptionType === "number" ? String(subscriptionType) : "N/A"}
+                  <div className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Updated At</div>
+                  <div className="text-base font-semibold text-[#111826]">
+                    {updatedAt ? dayjs(updatedAt).format("DD/MM/YYYY HH:mm") : "N/A"}
                   </div>
                 </div>
               </div>
@@ -443,6 +531,97 @@ function UserDetails() {
               )}
             </div>
           )}
+        </Modal>
+
+        {/* Blocked Users List Modal */}
+        <Modal
+          title={<span className="text-xl font-bold">Blocked Users List</span>}
+          open={isBlockedUsersModalOpen}
+          onCancel={() => {
+            setIsBlockedUsersModalOpen(false);
+            setReopenBlockedList(false);
+          }}
+          footer={null}
+          width={1000}
+          centered
+        >
+          <Table
+            dataSource={blockedUsersData?.data?.blockedUsers?.map((u, idx) => ({
+              key: u._id,
+              no: (blockedUsersPage - 1) * 10 + idx + 1,
+              fullName: u.fullname || "N/A",
+              email: u.email || "N/A",
+              phone: u.mobile || "N/A",
+              isBlocked: true,
+            }))}
+            columns={[
+              { title: "No", dataIndex: "no", key: "no", width: 60 },
+              { title: "Full Name", dataIndex: "fullName", key: "fullName" },
+              { title: "Email", dataIndex: "email", key: "email" },
+              { title: "Phone No", dataIndex: "phone", key: "phone" },
+              {
+                title: "Action",
+                key: "action",
+                render: (_, record) => (
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => openBlock(record)}
+                      title="Unblock User"
+                    >
+                      <MdLockOpen className="text-green-500 w-5 h-5 cursor-pointer rounded-md" />
+                    </button>
+                    <button 
+                      onClick={() => openDelete(record)}
+                      title="Delete User"
+                    >
+                      <IoTrash className="text-red-500 w-5 h-5 cursor-pointer rounded-md" />
+                    </button>
+                    <button onClick={() => showViewModal(record)}>
+                      <FaRegEye className="text-[#111827] w-5 h-5 cursor-pointer rounded-md" />
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
+            loading={isBlockedUsersLoading}
+            pagination={{
+              current: blockedUsersData?.data?.pagination?.currentPage || blockedUsersPage,
+              pageSize: blockedUsersData?.data?.pagination?.blockedUsersPerPage || 10,
+              total: blockedUsersData?.data?.pagination?.totalBlockedUsers || 0,
+              onChange: (page) => setBlockedUsersPage(page),
+            }}
+            scroll={{ x: "max-content" }}
+          />
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          open={isDeleteModalOpen}
+          centered
+          onCancel={() => setIsDeleteModalOpen(false)}
+          footer={null}
+        >
+          <div className="flex flex-col justify-center items-center py-10">
+            <h1 className="text-3xl text-center text-[#111827]">Delete User</h1>
+            <p className="text-xl text-center mt-5 text-gray-600">
+              Are you sure you want to delete <span className="font-bold">{selectedUser?.fullName}</span>? This action cannot be undone.
+            </p>
+            <div className="text-center py-5 flex justify-center gap-3">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="bg-gray-800 text-white font-semibold py-3 px-5 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeletingUser}
+                className="bg-red-600 text-white font-semibold py-3 px-5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isDeletingUser ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
         </Modal>
       </ConfigProvider>
     </div>

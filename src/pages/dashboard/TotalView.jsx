@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -39,33 +38,15 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 const TotalView = ({ data = demoData, dataKey = "videoView" }) => {
-  const [chartHeight, setChartHeight] = useState(220);
-
   const safeData = Array.isArray(data) && data.length ? data : demoData;
   const maxValue = Math.max(
     ...safeData.map((item) => Number(item?.[dataKey] ?? 0)),
     0
   );
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 220) {
-        setChartHeight(250); // Adjust height for mobile
-      } else if (window.innerWidth < 768) {
-        setChartHeight(220); // Adjust height for smaller tablets
-      } else {
-        setChartHeight(220); // Default height for larger screens
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize(); // Call on mount to set the initial height
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
   return (
-    <div>
-      <ResponsiveContainer width="100%" height={chartHeight}>
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={safeData}
           margin={{
