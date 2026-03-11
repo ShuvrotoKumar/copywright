@@ -73,32 +73,34 @@ function Subscriptions() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-[#111826] px-5 py-4 rounded-lg mb-8 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="text-white hover:opacity-90 transition"
-              aria-label="Go back"
-            >
-              <IoChevronBack className="w-6 h-6" />
-            </button>
-            <h1 className="text-white text-2xl font-bold">
-              Subscription Plans
-            </h1>
-          </div>
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap items-center justify-between gap-4 shadow-md">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-white hover:opacity-90 transition"
+            aria-label="Go back"
+          >
+            <IoChevronBack className="w-6 h-6" />
+          </button>
+          <h1 className="text-white text-xl sm:text-2xl font-bold">
+            Subscription Plans
+          </h1>
+        </div>
+        <div className="flex items-center gap-3">
           <Select
             value={statusFilter}
             onChange={setStatusFilter}
             className="w-40"
             placeholder="Filter by status"
+            dropdownStyle={{ borderRadius: '8px' }}
           >
             <Option value="all">All Plans</Option>
             <Option value="active">Active</Option>
             <Option value="inactive">Inactive</Option>
           </Select>
         </div>
+      </div>
 
         {isError && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-center py-4 rounded-lg mb-6">
@@ -220,8 +222,7 @@ function Subscriptions() {
             </p>
           </div>
         )}
-      </div>
-
+ 
       {/* Edit Subscription Modal */}
       <Modal
         title="Edit Subscription"

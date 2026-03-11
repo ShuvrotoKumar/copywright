@@ -55,17 +55,17 @@ export default function AddAdmin() {
   };
 
   return (
-    <div className="p-5">
+    <div>
       {/* Header */}
-      <div className="bg-[#111826] text-[white] px-5 py-3 rounded-md mb-3 flex items-center gap-3">
+      <div className="bg-[#111826] text-white px-4 md:px-5 py-3 rounded-md mb-3 flex items-center gap-3 shadow-md">
         <button
           onClick={() => navigate(-1)}
-          className="text-[white] hover:opacity-90 transition"
+          className="text-white hover:opacity-90 transition"
           aria-label="Go back"
         >
           <IoChevronBack className="w-6 h-6" />
         </button>
-        <h1 className="text-white text-2xl font-bold">Add Admin</h1>
+        <h1 className="text-white text-xl sm:text-2xl font-bold">Add Admin</h1>
       </div>
 
       {/* Form */}

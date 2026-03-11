@@ -7,13 +7,12 @@ export default function Settings() {
   const currentPath = location.pathname;
   const isActive = (path) => currentPath === path;
   return (
-    <div className="w-full mx-auto">
-      {/* Card */}
-      <div className="bg-white rounded-md shadow border border-gray-200 overflow-hidden">
-        {/* Header */}
-        <div className="bg-[#111826] px-5 py-3">
-          <h1 className="text-white text-2xl font-bold">Settings</h1>
-        </div>
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 shadow-md">
+        <h1 className="text-white text-xl sm:text-2xl font-bold">Settings</h1>
+      </div>
+
+      <div className="bg-white rounded-md shadow border border-gray-200">
 
         {/* List */}
         <ul className="divide-y divide-gray-200">

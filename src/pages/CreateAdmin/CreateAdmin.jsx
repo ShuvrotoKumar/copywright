@@ -109,22 +109,24 @@ export default function CreateAdmin() {
   ];
 
   return (
-    <div className="p-5">
-      <div className="bg-[#111826] px-5 py-3 rounded-md mb-3 flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-white hover:opacity-90 transition"
-          aria-label="Go back"
-        >
-          <IoChevronBack className="w-6 h-6" />
-        </button>
-        <h1 className="text-white text-2xl font-bold">Admin List</h1>
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-white hover:opacity-90 transition"
+            aria-label="Go back"
+          >
+            <IoChevronBack className="w-6 h-6" />
+          </button>
+          <h1 className="text-white text-xl sm:text-2xl font-bold">Admin List</h1>
+        </div>
         <button
           type="button"
           onClick={() => navigate("/add-admin")}
-          className="ml-auto bg-white text-[#111826] px-3 py-1 rounded-md font-semibold flex items-center gap-2 hover:opacity-95 transition"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold flex items-center gap-2 hover:bg-blue-700 transition"
         >
-          <IoAddOutline className="w-4 h-4" />
+          <IoAddOutline className="w-5 h-5" />
           Add Admin
         </button>
       </div>
@@ -133,10 +135,11 @@ export default function CreateAdmin() {
         theme={{
           components: {
             Table: {
-              headerBg: "[#111826]",
-              headerColor: "[#111826]",
+              headerBg: "#f9fafb",
+              headerColor: "#000000",
               cellFontSize: 16,
-              headerSplitColor: "[#111826]",
+              headerSplitColor: "#f9fafb",
+              colorTextHeading: "#000000",
             },
             Pagination: {
               colorPrimaryBorder: "#111827",

@@ -294,8 +294,8 @@ function Blog() {
   };
 
   return (
-    <div className="p-6">
-      <div className="bg-[#111826] px-5 py-3 rounded-md mb-6 flex items-center justify-between">
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -304,45 +304,34 @@ function Blog() {
           >
             <IoChevronBack className="w-6 h-6" />
           </button>
-          <h1 className="text-white text-2xl font-bold">Blog</h1>
+          <h1 className="text-white text-xl sm:text-2xl font-bold">Blog</h1>
         </div>
-        <button
-          onClick={() => showEditModal({})}
-          className="flex items-center gap-2 bg-gray-100 text-[#111826] px-4 py-2 rounded-md transition-colors"
-        >
-          <IoCreateOutline className="w-5 h-5" />
-          Create Blog
-        </button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="mb-6 flex justify-end">
-          <div className="relative w-80">
+        
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => showEditModal({})}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md transition-colors hover:bg-blue-700"
+          >
+            <IoCreateOutline className="w-5 h-5" />
+            Create Blog
+          </button>
+          <div className="relative w-64 md:w-80">
             <input
               type="text"
               placeholder="Search blogs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-white text-[#0D0D0D] placeholder-gray-500 pl-10 pr-3 py-2 rounded-md focus:outline-none"
             />
-            <IoSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           </div>
         </div>
+      </div>
 
-        <ConfigProvider
-          theme={{
-            components: {
-              Table: {
-                headerBg: "#f9fafb",
-                headerColor: "#111826",
-                headerBorderRadius: 8,
-                rowHoverBg: "#f3f4f6",
-                colorText: "#1f2937",
-                colorLink: "#2563eb",
-                colorLinkHover: "#1d4ed8",
-                colorLinkActive: "#1e40af",
-              },
-             Pagination: {
+      <ConfigProvider
+        theme={{
+          components: {
+            Pagination: {
               colorPrimaryBorder: "#111827",
               colorBorder: "#111827",
               colorPrimaryHover: "#111827",
@@ -350,9 +339,16 @@ function Blog() {
               itemActiveBgDisabled: "#111827",
               colorPrimary: "#111827",
             },
+            Table: {
+              headerBg: "#f9fafb",
+              headerColor: "#000000",
+              cellFontSize: 16,
+              headerSplitColor: "#f9fafb",
+              colorTextHeading: "#000000",
             },
-          }}
-        >
+          },
+        }}
+      >
           <Table
             dataSource={dataSource}
             columns={columns}
@@ -369,7 +365,6 @@ function Blog() {
             </div>
           )}
         </ConfigProvider>
-      </div>
 
       {/* View Blog Modal */}
       <Modal

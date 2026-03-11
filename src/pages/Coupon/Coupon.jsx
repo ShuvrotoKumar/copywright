@@ -110,8 +110,8 @@ function Coupon() {
   };
 
   return (
-    <div className="p-6">
-      <div className="bg-[#111826] px-5 py-3 rounded-md mb-6 flex items-center justify-between">
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
@@ -120,30 +120,30 @@ function Coupon() {
           >
             <IoChevronBack className="w-6 h-6" />
           </button>
-          <h1 className="text-white text-2xl font-bold">Coupon Management</h1>
+          <h1 className="text-white text-xl sm:text-2xl font-bold">Coupon Management</h1>
         </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2 bg-gray-100 text-[#111826] px-4 py-2 rounded-md hover:bg-gray-200 transition-colors"
-        >
-          <IoCreateOutline className="w-5 h-5" />
-          Create Coupon
-        </button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="mb-6 flex justify-end">
-          <div className="relative w-80">
+        
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <IoCreateOutline className="w-5 h-5" />
+            Create Coupon
+          </button>
+          <div className="relative w-64 md:w-80">
             <input
               type="text"
               placeholder="Search coupons..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-white text-[#0D0D0D] placeholder-gray-500 pl-10 pr-3 py-2 rounded-md focus:outline-none"
             />
-            <IoSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           </div>
         </div>
+      </div>
+
 
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
@@ -214,7 +214,6 @@ function Coupon() {
             ))}
           </div>
         )}
-      </div>
 
       {/* View Coupon Modal */}
       <Modal

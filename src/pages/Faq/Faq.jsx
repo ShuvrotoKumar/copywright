@@ -129,7 +129,7 @@ const Faq = () => {
 
   return (
     <div>
-      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap md:flex-nowrap items-start md:items-center gap-2 md:gap-3">
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap md:flex-nowrap items-start md:items-center gap-2 md:gap-3 shadow-md">
         <button
           onClick={() => navigate('/settings')}
           className="text-white hover:opacity-90 transition"
@@ -143,7 +143,7 @@ const Faq = () => {
         <div className="ml-0 md:ml-auto flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 bg-gray-100 text-[#111826] px-4 py-2 rounded-md transition-colors"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md transition-colors hover:bg-blue-700"
           >
             <FaPlus /> Add FAQ
           </button>
@@ -165,10 +165,10 @@ const Faq = () => {
               colorPrimary: "#111827",
             },
             Table: {
-              headerBg: "[#111826]",
+              headerBg: "#f9fafb",
               headerColor: "#000000",
               cellFontSize: 16,
-              headerSplitColor: "[#111826]",
+              headerSplitColor: "#f9fafb",
               colorTextHeading: "#000000",
             },
             Modal: {

@@ -66,9 +66,8 @@ function ProfilePage() {
   };
 
   return (
-    <div className="overflow-y-auto">
-      <div className="px-5 pb-5 h-full">
-        <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap md:flex-nowrap items-start md:items-center gap-2 md:gap-3">
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap md:flex-nowrap items-start md:items-center gap-2 md:gap-3 shadow-md">
           <button
             onClick={() => navigate(-1)}
             className="text-white hover:opacity-90 transition"
@@ -162,7 +161,6 @@ function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

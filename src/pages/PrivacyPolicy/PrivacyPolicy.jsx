@@ -36,8 +36,8 @@ export default function PrivacyPolicy() {
   }
 
   return (
-    <div className="p-5">
-      <div className="bg-[#111826] px-5 py-3 rounded-md mb-3 flex items-center gap-3">
+    <div>
+      <div className="bg-[#111826] px-4 md:px-5 py-3 rounded-md mb-3 flex items-center gap-3 shadow-md">
         <button
           onClick={() => navigate(-1)}
           className="text-white hover:opacity-90 transition"
@@ -45,22 +45,22 @@ export default function PrivacyPolicy() {
         >
           <IoChevronBack className="w-6 h-6" />
         </button>
-        <h1 className="text-white text-2xl font-bold">Privacy Policy</h1>
+        <h1 className="text-white text-xl sm:text-2xl font-bold">Privacy Policy</h1>
       </div>
 
-      <div className=" bg-white rounded shadow p-5 h-full">
+      <div className="bg-white rounded-md shadow border border-gray-200 p-5">
         <ReactQuill
-          style={{ padding: "10px" }}
           theme="snow"
           value={content}
           onChange={setContent}
+          style={{ height: "400px", marginBottom: "50px" }}
         />
       </div>
       <div className="text-center py-5 w-full">
         <button
           onClick={handleUpdate}
           disabled={isUpdating}
-          className="bg-[#111826] text-white font-semibold w-full py-2 rounded transition duration-200 disabled:opacity-50"
+          className="bg-[#111826] text-white font-semibold w-full py-3 rounded-md transition duration-200 disabled:opacity-50 hover:bg-gray-800"
         >
           {isUpdating ? "Saving..." : "Save changes"}
         </button>
